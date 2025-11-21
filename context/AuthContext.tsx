@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import jwtDecode, { JwtPayload } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
 import api, { TokenBundle } from "../lib/api";
 
 interface DecodedToken extends JwtPayload {
