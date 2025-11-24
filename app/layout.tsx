@@ -1,22 +1,32 @@
-// app/layout.tsx (Server Component)
-
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ClientLayout from "../components/auth/ClientLayout";
+import Sidebar from "../components/nav/Sidebar";
+import Topbar from "../components/nav/Topbar";
+import { AuthProvider } from "../context/AuthContext";
 
-export const metadata: Metadata = {
-  title: "CRM Dashboard",
-  description: "Real estate CRM MVP",
-};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+      <body className="flex bg-white dark:bg-black antialiased">
+        <AuthProvider>
+          
+          {/* Sidebar persists across the site */}
+          <Sidebar />
+
+          {/* Main content area */}
+          <div className="flex-1 flex flex-col min-h-screen">
+
+            {/* Slim top header */}
+            <Topbar />
+
+            {/* Page content */}
+            <main className="p-6 pt-20">
+              {children}
+            </main>
+    
+          </div>
+
+        </AuthProvider>
       </body>
     </html>
   );
