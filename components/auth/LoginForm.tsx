@@ -1,55 +1,53 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useState } from "react";
 
 export default function LoginForm() {
-  const { login } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      await login(username, password);
-    } catch (err) {
-      console.error(err);
-      setError("Invalid credentials");
-    } finally {
-      setLoading(false);
+    setError("");
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+
+    const res = await fetch("/api/login", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      window.location.href = "/dashboard";
+    } else {
+      setError("Invalid email or password.");
     }
-  };
+  }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 p-6 max-w-sm mx-auto mt-28 bg-gray-900/80 rounded-xl border border-white/10"
-    >
-      <h1 className="text-2xl font-bold">Login</h1>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <p className="text-red-600">{error}</p>}
+
       <input
-        className="p-2 rounded bg-gray-800 border border-gray-700"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        type="email"
+        name="email"
+        placeholder="Email"
+        className="w-full border px-3 py-2 rounded"
+        required
       />
+
       <input
-        className="p-2 rounded bg-gray-800 border border-gray-700"
         type="password"
+        name="password"
         placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        className="w-full border px-3 py-2 rounded"
+        required
       />
-      {error && <p className="text-sm text-red-400">{error}</p>}
+
       <button
         type="submit"
-        disabled={loading}
-        className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900 p-2 rounded font-medium"
+        className="w-full bg-blue-600 text-white py-2 rounded"
       >
-        {loading ? "Logging in..." : "Login"}
+        Login
       </button>
     </form>
   );

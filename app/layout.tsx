@@ -1,39 +1,22 @@
+// app/layout.tsx (Server Component)
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/nav/Navbar";
-import { AuthProvider } from "../context/AuthContext";
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import ClientLayout from "../components/auth/ClientLayout";
 
 export const metadata: Metadata = {
   title: "CRM Dashboard",
   description: "Real estate CRM MVP",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          <Navbar />
-          <main className="pt-20 px-6 pb-10 max-w-6xl mx-auto">
-            {children}
-          </main>
-        </AuthProvider>
+      <body className="antialiased">
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );
