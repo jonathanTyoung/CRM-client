@@ -1,32 +1,17 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
   const access = cookieStore.get("access")?.value;
 
+  // 👉 If logged in → redirect to dashboard
   if (access) {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-10">
-        <h1 className="text-3xl font-semibold">Welcome back 👋</h1>
-        <p className="mt-2 text-zinc-600">You are logged in to the CRM.</p>
-
-        <div className="mt-6 flex gap-4">
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-blue-600 px-5 py-2 text-white"
-          >
-            Go to Dashboard
-          </Link>
-
-          <form action="/api/logout" method="post">
-            <button className="rounded-md border px-5 py-2">Logout</button>
-          </form>
-        </div>
-      </main>
-    );
+    redirect("/dashboard");
   }
 
+  // 👉 If NOT logged in → show public landing page
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-10">
       <h1 className="text-4xl font-bold">The Gomes Agency CRM</h1>
