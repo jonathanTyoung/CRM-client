@@ -14,7 +14,7 @@ export default async function HomePage() {
   // 👉 If NOT logged in → show public landing page
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-10">
-      <h1 className="text-4xl font-bold">The Gomes Agency CRM</h1>
+      <h1 className="text-4xl font-bold">The Gomes Agency</h1>
 
       <p className="mt-3 max-w-md text-center text-lg text-zinc-600">
         Manage your contacts, leads, and deals effortlessly.
@@ -25,9 +25,9 @@ export default async function HomePage() {
           Login
         </Link>
 
-        <Link href="/register" className="rounded-md border px-5 py-2">
+        {/* <Link href="/register" className="rounded-md border px-5 py-2">
           Register
-        </Link>
+        </Link> */}
       </div>
     </main>
   );
