@@ -1,37 +1,35 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json();
+  const body = await req.json();
 
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-  const res = await fetch(`${BASE_URL}/api/login/`, {
+  // Call your Django backend
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login/`, {
     method: "POST",
+    body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
   });
-
-  if (!res.ok) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
 
   const data = await res.json();
+  if (!res.ok) {
+    return NextResponse.json({ error: data.detail }, { status: 401 });
+  }
 
-  const response = NextResponse.json({ success: true });
+  // Store tokens in httpOnly cookies for SSR
+  const c = cookies();
 
-  // Set secure HTTP-only cookies
-  response.cookies.set("access", data.access, {
+  c.set("access", data.access, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,
     path: "/",
+    sameSite: "lax",
   });
 
-  response.cookies.set("refresh", data.refresh, {
+  c.set("refresh", data.refresh, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,
     path: "/",
+    sameSite: "lax",
   });
 
-  return response;
+  return NextResponse.json({ success: true });
 }

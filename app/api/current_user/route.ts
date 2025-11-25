@@ -2,16 +2,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const access = cookieStore.get("access")?.value;
+  const access = cookies().get("access")?.value;
 
-  if (!access) return NextResponse.json(null);
+  if (!access) return NextResponse.json({ user: null });
 
-  // Proxy to Django
-  const res = await fetch(`${process.env.API_URL}/current_user`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/current_user/`, {
     headers: { Authorization: `Bearer ${access}` },
   });
 
-  const data = await res.json();
-  return NextResponse.json(data);
+  if (!res.ok) return NextResponse.json({ user: null });
+
+  return NextResponse.json(await res.json());
 }

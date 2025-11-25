@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST() {
-  const cookieStore = await cookies();
+  const res = NextResponse.json({ success: true });
 
-  // Delete auth cookies
-  cookieStore.delete("access");
-  cookieStore.delete("refresh");
+  // Clear cookies correctly (Next.js 15+)
+  res.cookies.set("access", "", {
+    expires: new Date(0),
+    path: "/",
+  });
 
-  // Redirect to login
-  return NextResponse.redirect("/login");
+  res.cookies.set("refresh", "", {
+    expires: new Date(0),
+    path: "/",
+  });
+
+  return res;
 }

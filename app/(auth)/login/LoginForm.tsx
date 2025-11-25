@@ -1,34 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
+import { loginAction } from "./actions";
 
 export default function LoginForm() {
   const [error, setError] = useState("");
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    const form = new FormData(e.currentTarget as HTMLFormElement);
-
-    const res = await fetch("/api/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: form.get("email"),
-        password: form.get("password"),
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (!res.ok) {
-      setError("Invalid login");
-      return;
-    }
-
-    window.location.href = "/dashboard";
-  }
+  const { pending } = useFormStatus();
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4 w-80">
+    <form
+      action={async (formData) => {
+        const result = await loginAction(formData);
+
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+
+        window.location.href = "/dashboard";
+      }}
+      className="flex flex-col gap-4 w-80"
+    >
       <h1 className="text-2xl font-semibold">Login</h1>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -37,23 +30,20 @@ export default function LoginForm() {
         type="email"
         name="email"
         placeholder="Email"
+        className="border p-2 rounded"
         required
-        className="border px-3 py-2 rounded"
       />
 
       <input
         type="password"
         name="password"
         placeholder="Password"
+        className="border p-2 rounded"
         required
-        className="border px-3 py-2 rounded"
       />
 
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-      >
-        Login
+      <button disabled={pending} className="btn-primary">
+        {pending ? "Logging in..." : "Login"}
       </button>
     </form>
   );
