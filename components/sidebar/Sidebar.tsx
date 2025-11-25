@@ -25,12 +25,12 @@ export default function Sidebar({ user }: { user: any }) {
 
       <nav className="flex flex-col gap-4 flex-1">
         {sidebarLinks.map((section, idx) => {
-          // Admin section is hidden for non-admins
+          // Hide Admin section for non-admins
           if (section.adminOnly && !user.is_admin) return null;
 
           return (
             <div key={idx}>
-              {/* Section label */}
+              {/* Section Title */}
               <h3 className="text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400 mb-2 tracking-wide">
                 {section.section}
               </h3>
@@ -39,7 +39,7 @@ export default function Sidebar({ user }: { user: any }) {
                 {section.items.map((item) => {
                   const hasChildren = Array.isArray(item.children);
 
-                  // Logout tab special case
+                  // Special case: Logout
                   if (item.isLogout) {
                     return (
                       <button
@@ -52,7 +52,7 @@ export default function Sidebar({ user }: { user: any }) {
                     );
                   }
 
-                  // Normal link
+                  // Simple link
                   if (!hasChildren) {
                     return (
                       <Link
@@ -70,7 +70,7 @@ export default function Sidebar({ user }: { user: any }) {
                     );
                   }
 
-                  // Dropdown (collapsible)
+                  // Collapsible link group
                   return (
                     <div key={item.href}>
                       <button

@@ -37,6 +37,14 @@ export const sidebarLinks = [
   },
 
   // ------------------------
+  // LISTINGS (IDX)
+  // ------------------------
+  {
+    section: "Listings",
+    items: [{ href: "/listings/search", label: "Property Search" }],
+  },
+
+  // ------------------------
   // COMMUNICATION SECTION
   // ------------------------
   {
