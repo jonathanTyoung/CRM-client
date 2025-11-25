@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthProvider } from "../../context/AuthContext";
-import Navbar from "../nav/Navbar";
+import Navbar from "../navbar/Navbar";
 
 export default function ClientLayout({
   children,

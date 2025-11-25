@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
+"use server";
 
-export async function POST(req: Request) {
-  const { email, password } = await req.json();
+import { cookies } from "next/headers";
+
+export async function loginAction(formData: FormData) {
+  const email = formData.get("email");
+  const password = formData.get("password");
 
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+
   const res = await fetch(`${BASE_URL}/api/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -11,27 +15,25 @@ export async function POST(req: Request) {
   });
 
   if (!res.ok) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    return { error: "Invalid credentials" };
   }
 
   const data = await res.json();
 
-  const response = NextResponse.json({ success: true });
-
-  // Set secure HTTP-only cookies
-  response.cookies.set("access", data.access, {
+  // Save tokens in HTTP-only cookies
+  cookies().set("access", data.access, {
     httpOnly: true,
     sameSite: "lax",
     secure: false,
     path: "/",
   });
 
-  response.cookies.set("refresh", data.refresh, {
+  cookies().set("refresh", data.refresh, {
     httpOnly: true,
     sameSite: "lax",
     secure: false,
     path: "/",
   });
 
-  return response;
+  return { success: true };
 }

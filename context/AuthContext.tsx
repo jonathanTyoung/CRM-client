@@ -1,30 +1,35 @@
-"use client";
+// "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+// import { createContext, useContext, ReactNode, useTransition } from "react";
 
-interface AuthContextValue {
-  logout: () => void;
-}
+// interface AuthContextValue {
+//   logout: () => void;
+//   loading: boolean;
+// }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+// const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const logout = () => {
-    // use logout route handler
-    fetch("/api/logout", { method: "POST" }).then(() => {
-      window.location.href = "/login";
-    });
-  };
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [isPending, startTransition] = useTransition();
 
-  return (
-    <AuthContext.Provider value={{ logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+//   const logout = () => {
+//     startTransition(async () => {
+//       await fetch("/api/logout", { method: "POST" });
+//       window.location.href = "/login";
+//     });
+//   };
 
-export const useAuthContext = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuthContext must be used within AuthProvider");
-  return ctx;
-};
+//   return (
+//     <AuthContext.Provider value={{ logout, loading: isPending }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// }
+
+// export function useAuthContext() {
+//   const ctx = useContext(AuthContext);
+//   if (!ctx) {
+//     throw new Error("useAuthContext must be used within AuthProvider");
+//   }
+//   return ctx;
+// }

@@ -2,21 +2,20 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const access = req.cookies.get("access")?.value;
+  const res = NextResponse.next();
 
-  const protectedRoutes = ["/dashboard", "/contacts", "/leads"];
+  // Add pathname for SSR components
+  res.headers.set("x-pathname", req.nextUrl.pathname);
 
-  const isProtected = protectedRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
-  );
-
-  if (isProtected && !access) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/contacts/:path*", "/leads/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/contacts/:path*",
+    "/leads/:path*",
+    "/opportunities/:path*",
+    "/",
+  ],
 };
