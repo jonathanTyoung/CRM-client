@@ -13,8 +13,8 @@ export const sidebarLinks = [
   {
     section: "CRM",
     items: [
-      { href: "/contacts", label: "Contacts" },
-      { href: "/leads", label: "Leads" },
+        { href: "/contacts", label: "Contacts" },
+        { href: "/leads", label: "Leads" },
       {
         href: "/opportunities",
         label: "Opportunities",
