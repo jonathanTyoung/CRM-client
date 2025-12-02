@@ -1,0 +1,38 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export function DeleteContactButton({ id }: { id: number }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  async function handleDelete() {
+    if (!confirm("Delete this contact? This cannot be undone.")) {
+      return;
+    }
+
+    setLoading(true);
+
+    const res = await fetch(`/api/contacts/${id}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      router.push("/contacts");
+    } else {
+      alert("Failed to delete contact.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleDelete}
+      disabled={loading}
+      className="btn-secondary text-red-500 border-red-500 hover:bg-red-100"
+    >
+      {loading ? "Deleting…" : "Delete"}
+    </button>
+  );
+}

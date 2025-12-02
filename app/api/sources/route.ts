@@ -1,4 +1,4 @@
-// app/api/current_user/route.ts
+// app/api/sources/route.ts
 import { cookies } from "next/headers";
 import { API_BASE } from "../../../lib/api";
 
@@ -10,7 +10,7 @@ export async function GET() {
     return Response.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(`${API_BASE}/api/current_user`, {
+  const res = await fetch(`${API_BASE}/api/sources/`, {
     headers: { Authorization: `Bearer ${access}` },
     cache: "no-store",
   });

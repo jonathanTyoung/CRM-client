@@ -1,18 +1,20 @@
-import { NextResponse } from "next/server";
+// app/api/logout/route.ts
+import { cookies } from "next/headers";
 
 export async function POST() {
-  const res = NextResponse.json({ success: true });
+  const cookieStore = await cookies();
 
-  // Clear cookies correctly (Next.js 15+)
-  res.cookies.set("access", "", {
+  cookieStore.set("access", "", {
+    httpOnly: true,
     expires: new Date(0),
     path: "/",
   });
 
-  res.cookies.set("refresh", "", {
+  cookieStore.set("refresh", "", {
+    httpOnly: true,
     expires: new Date(0),
     path: "/",
   });
 
-  return res;
+  return Response.json({ success: true });
 }

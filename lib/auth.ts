@@ -10,7 +10,7 @@ export async function getCurrentUser() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
   // Call Django current_user endpoint
-  const res = await fetch(`${BASE_URL}/api/current_user/`, {
+  const res = await fetch(`${BASE_URL}/api/current_user`, {
     headers: {
       Authorization: `Bearer ${access}`,
     },
