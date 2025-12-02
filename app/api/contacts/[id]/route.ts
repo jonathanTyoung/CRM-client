@@ -2,7 +2,11 @@
 import { cookies } from "next/headers";
 import { API_BASE } from "../../../../lib/api";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+// GET single contact
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const cookieStore = await cookies();
   const access = cookieStore.get("access")?.value;
 
@@ -10,8 +14,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return Response.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(`${API_BASE}/api/contacts/${params.id}`, {
-    headers: { Authorization: `Bearer ${access}` },
+  const res = await fetch(`${API_BASE}/api/contacts/${params.id}/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
     cache: "no-store",
   });
 
@@ -19,7 +25,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return Response.json(data, { status: res.status });
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+// UPDATE (PATCH)
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const cookieStore = await cookies();
   const access = cookieStore.get("access")?.value;
 
@@ -29,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const body = await req.json();
 
-  const res = await fetch(`${API_BASE}/api/contacts/${params.id}`, {
+  const res = await fetch(`${API_BASE}/api/contacts/${params.id}/`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -42,7 +52,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return Response.json(data, { status: res.status });
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// DELETE
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const cookieStore = await cookies();
   const access = cookieStore.get("access")?.value;
 
@@ -50,9 +64,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return Response.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(`${API_BASE}/api/contacts/${params.id}`, {
+  const res = await fetch(`${API_BASE}/api/contacts/${params.id}/`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${access}` },
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
   });
 
   return Response.json({}, { status: res.status });

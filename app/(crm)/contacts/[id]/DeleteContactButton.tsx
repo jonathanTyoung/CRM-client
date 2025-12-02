@@ -18,12 +18,14 @@ export function DeleteContactButton({ id }: { id: number }) {
       method: "DELETE",
     });
 
-    if (res.ok) {
+    if (res.status === 204 || res.ok) {
       router.push("/contacts");
-    } else {
-      alert("Failed to delete contact.");
-      setLoading(false);
+      router.refresh();
+      return;
     }
+
+    alert("Failed to delete contact.");
+    setLoading(false);
   }
 
   return (

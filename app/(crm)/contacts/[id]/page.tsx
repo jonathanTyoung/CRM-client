@@ -1,5 +1,6 @@
+// app/contacts/[id]/page.tsx
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { apiFetch } from "../../../../lib/fetcher";
 import { DeleteContactButton } from "./DeleteContactButton";
 
 // -----------------------------
@@ -30,51 +31,18 @@ interface Contact {
 }
 
 // -----------------------------
-// Fetch helper
-// -----------------------------
-async function getContact(id: string, token: string): Promise<Contact | null> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  const res = await fetch(`${baseUrl}/api/contacts/${id}/`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) return null;
-  return res.json();
-}
-
-// -----------------------------
 // Page Component (Next.js 15 compliant)
 // -----------------------------
 export default async function ContactDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
-  // Unwrap route params (Next.js 15)
+  // Unwrap dynamic route params
   const { id } = await props.params;
 
-  // Grab auth token from cookies
-  const cookieStore = await cookies();
-  const access = cookieStore.get("access")?.value;
+  // Fetch from Next.js API (NOT Django)
+  const res = await apiFetch(`/api/contacts/${id}`);
 
-  if (!access) {
-    return (
-      <div className="p-6">
-        <p className="text-red-500 text-sm">You must be logged in.</p>
-        <Link href="/contacts" className="btn-secondary inline-block mt-4">
-          ← Back to contacts
-        </Link>
-      </div>
-    );
-  }
-
-  // Fetch the contact
-  const contact = await getContact(id, access);
-
-  if (!contact) {
+  if (!res.ok) {
     return (
       <div className="p-6">
         <p className="text-red-500 text-sm">Contact not found.</p>
@@ -84,6 +52,8 @@ export default async function ContactDetailPage(props: {
       </div>
     );
   }
+
+  const contact: Contact = await res.json();
 
   // -----------------------------
   // Render

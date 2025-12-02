@@ -4,6 +4,7 @@ import { API_BASE } from "../../../lib/api";
 export async function POST(req: Request) {
   const { email, password } = await req.json();
 
+  // Hit Django
   const res = await fetch(`${API_BASE}/api/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -15,9 +16,20 @@ export async function POST(req: Request) {
     return Response.json(data, { status: res.status });
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set("access", data.access, { httpOnly: true, path: "/" });
-  cookieStore.set("refresh", data.refresh, { httpOnly: true, path: "/" });
+  // Store JWT securely
+  cookies().set("access", data.access, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
 
-  return Response.json(data, { status: 200 });
+  cookies().set("refresh", data.refresh, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  return Response.json({ success: true }, { status: 200 });
 }
