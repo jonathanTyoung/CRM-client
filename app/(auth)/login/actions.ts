@@ -22,10 +22,11 @@ export async function loginAction(formData: FormData) {
 
   const cookieStore = await cookies();
 
+  // FIXED — SERVER MUST SEE ACCESS TOKEN
   cookieStore.set("access", data.access, {
-    httpOnly: true,
+    httpOnly: true,      // REQUIRED for SSR + route handlers
     sameSite: "lax",
-    secure: false,
+    secure: false,       // true in production
     path: "/",
   });
 

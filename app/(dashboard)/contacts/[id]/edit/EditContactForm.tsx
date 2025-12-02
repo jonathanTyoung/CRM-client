@@ -48,8 +48,8 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     async function loadMeta() {
       try {
         const [tagsRes, sourcesRes] = await Promise.all([
-          fetch("/api/tags"),
-          fetch("/api/sources"),
+          fetch("/internal/tags", { credentials: "include" }),       // 🔥 FIX #1
+          fetch("/internal/sources", { credentials: "include" }),    // 🔥 FIX #2
         ]);
 
         const [tagsData, sourcesData] = await Promise.all([
@@ -91,8 +91,9 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     setError("");
 
     try {
-      const res = await fetch(`/api/contacts/${contact.id}`, {
+      const res = await fetch(`/internal/contacts/${contact.id}`, {
         method: "PATCH",
+        credentials: "include",                        // 🔥 FIX #3
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: form.first_name,
@@ -122,10 +123,9 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
-      {/* Name */}
+      {/* Name Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium block mb-1">First Name</label>
@@ -186,7 +186,6 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
 
       {/* Source & Tags */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
         <div>
           <label className="text-sm font-medium block mb-1">Source</label>
           <select
@@ -222,7 +221,6 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
             ))}
           </div>
         </div>
-
       </div>
 
       {/* Footer */}
@@ -240,7 +238,6 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
           {submitting ? "Saving..." : "Save Changes"}
         </button>
       </div>
-
     </form>
   );
 }

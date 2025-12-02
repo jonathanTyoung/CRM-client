@@ -1,4 +1,4 @@
-// app/(crm)/contacts/page.tsx
+// app/(dashboard)/contacts/page.tsx
 
 import { cookies } from "next/headers";
 import ContactsTable from "./ContactsTable";
@@ -6,21 +6,21 @@ import ContactsTable from "./ContactsTable";
 export default async function ContactsPage({ searchParams }) {
   const { page = "1", search = "" } = await searchParams;
 
-  // get JWT from cookies
-  const cookieStore = await cookies();
-  const access = cookieStore.get("access")?.value;
-
+  // Read httpOnly token on the server
+  const access = (await cookies()).get("access")?.value;
   if (!access) {
     return <div>You must be logged in.</div>;
   }
 
-  const BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  // Build Django URL
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+  const url = new URL("/api/contacts", BASE_URL);
+  url.searchParams.set("page", page);
+  if (search) url.searchParams.set("search", search);
 
-  const url = `${BASE_URL}/api/contacts?page=${page}${
-    search ? `&search=${search}` : ""
-  }`;
+  console.log("🟡 SERVER → DJANGO:", url.toString());
 
+  // Fetch directly from Django (correct for server components)
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${access}`,
@@ -29,7 +29,7 @@ export default async function ContactsPage({ searchParams }) {
   });
 
   if (!res.ok) {
-    return <div>Failed to load contacts: {res.status}</div>;
+    return <div>Failed to load contacts. Status: {res.status}</div>;
   }
 
   const data = await res.json();

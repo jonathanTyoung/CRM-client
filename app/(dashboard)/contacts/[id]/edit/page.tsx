@@ -9,8 +9,8 @@ export default async function EditContactPage(props: {
   // Unwrap Next.js 15 async params
   const { id } = await props.params;
 
-  // Fetch through Next.js API proxy (NOT Django directly)
-  const res = await apiFetch(`/api/contacts/${id}`);
+  // Fetch through INTERNAL proxy (correct!)
+  const res = await apiFetch(`/internal/contacts/${id}`);
 
   if (!res.ok) {
     return <p className="text-red-500">Contact not found.</p>;

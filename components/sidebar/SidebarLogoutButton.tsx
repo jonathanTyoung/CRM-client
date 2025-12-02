@@ -4,7 +4,12 @@ export default function SidebarLogoutButton() {
   return (
     <button
       onClick={async () => {
-        await fetch("/api/logout", { method: "POST" });
+        await fetch("/internal/logout", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+        });
+
         window.location.href = "/login";
       }}
       className="text-red-500 hover:underline text-sm"

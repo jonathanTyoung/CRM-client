@@ -1,66 +1,49 @@
-// app/contacts/[id]/page.tsx
+// app/(crm)/contacts/[id]/page.tsx
+
 import Link from "next/link";
-import { apiFetch } from "../../../../lib/fetcher";
+import { cookies } from "next/headers";
 import { DeleteContactButton } from "./DeleteContactButton";
 
-// -----------------------------
-// Types
-// -----------------------------
-interface Tag {
-  id: number;
-  name: string;
-}
-
-interface Source {
-  id: number;
-  name: string;
-}
-
-interface Contact {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  notes: string;
-  owner: string;
-  source: Source | null;
-  tags: Tag[];
-  created_at: string;
-  updated_at: string;
-}
-
-// -----------------------------
-// Page Component (Next.js 15 compliant)
-// -----------------------------
 export default async function ContactDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
-  // Unwrap dynamic route params
   const { id } = await props.params;
 
-  // Fetch from Next.js API (NOT Django)
-  const res = await apiFetch(`/api/contacts/${id}`);
+  const token = (await cookies()).get("access")?.value;
+
+  if (!token) {
+    return (
+      <div className="p-6">
+        <p className="text-red-500 text-sm">You must be logged in.</p>
+        <Link href="/login" className="btn-secondary mt-4 inline-block">
+          Go to Login
+        </Link>
+      </div>
+    );
+  }
+
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     return (
       <div className="p-6">
         <p className="text-red-500 text-sm">Contact not found.</p>
-        <Link href="/contacts" className="btn-secondary inline-block mt-4">
+        <Link href="/contacts" className="btn-secondary mt-4 inline-block">
           ← Back to contacts
         </Link>
       </div>
     );
   }
 
-  const contact: Contact = await res.json();
+  const contact = await res.json();
 
-  // -----------------------------
-  // Render
-  // -----------------------------
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
@@ -72,22 +55,16 @@ export default async function ContactDetailPage(props: {
         </div>
 
         <div className="flex gap-2">
-          <Link
-            href={`/contacts/${contact.id}/edit`}
-            className="btn-secondary"
-          >
+          <Link href={`/contacts/${contact.id}/edit`} className="btn-secondary">
             Edit
           </Link>
-
           <DeleteContactButton id={contact.id} />
-
           <Link href="/contacts" className="btn-secondary">
             Back
           </Link>
         </div>
       </div>
 
-      {/* Core info */}
       <div className="dashboard-card">
         <h2 className="dashboard-section-title mb-3">Contact Info</h2>
 
@@ -118,7 +95,6 @@ export default async function ContactDetailPage(props: {
         </div>
       </div>
 
-      {/* Notes */}
       <div className="dashboard-card">
         <h2 className="dashboard-section-title mb-3">Notes</h2>
         <p className="text-sm whitespace-pre-wrap">

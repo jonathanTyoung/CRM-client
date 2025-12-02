@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { loginAction } from "./actions";
+import { handleLogin } from "./handleLogin";
 
 export default function LoginForm() {
   const [error, setError] = useState("");
@@ -11,14 +11,11 @@ export default function LoginForm() {
   return (
     <form
       action={async (formData) => {
-        const result = await loginAction(formData);
+        const result = await handleLogin(formData);
 
         if (result?.error) {
           setError(result.error);
-          return;
         }
-
-        window.location.href = "/dashboard";
       }}
       className="flex flex-col gap-4 w-80"
     >
