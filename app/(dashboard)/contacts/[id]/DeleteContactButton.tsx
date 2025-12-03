@@ -1,42 +1,35 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
 
-export function DeleteContactButton({ id }: { id: number }) {
+export function DeleteContactButton({ id }: { id: number | string }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleDelete() {
-    if (!confirm("Delete this contact? This cannot be undone.")) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this contact?")) return;
 
-    setLoading(true);
-
-    // IMPORTANT: use internal route, not Django
     const res = await fetch(`/api/contacts/${id}`, {
       method: "DELETE",
-      credentials: "include",
     });
 
-    if (res.status === 204 || res.ok) {
-      router.push("/contacts");
-      router.refresh();
+    if (!res.ok) {
+      console.error("Failed to delete contact", await res.text());
+      alert("Failed to delete contact.");
       return;
     }
 
-    alert("Failed to delete contact.");
-    setLoading(false);
-  }
+    // After delete, go back to list
+    startTransition(() => {
+      router.push("/contacts");
+      router.refresh();
+    });
+  };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="btn-secondary text-red-500 border-red-500 hover:bg-red-100"
-    >
-      {loading ? "Deleting…" : "Delete"}
+    <button onClick={handleDelete} disabled={isPending} className="btn-danger">
+      {isPending ? "Deleting..." : "Delete"}
     </button>
   );
 }
