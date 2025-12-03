@@ -1,31 +1,31 @@
+// app/internal/contacts/[id]/route.ts
 import { cookies } from "next/headers";
-import { API_BASE } from "../../../../lib/api";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params;    // MUST await in Next.js 15
-  const cookieStore = await cookies();    // MUST await in Next.js 15
-  const access = cookieStore.get("access")?.value;
+  const { id } = await context.params;
+  const token = (await cookies()).get("access")?.value;
 
-  console.log("🔵 INTERNAL GET HIT:", req.url);
-  console.log("🔵 RAW ACCESS COOKIE:", access);
+  console.log("🔵 INTERNAL GET:", id);
 
-  if (!access) {
-    console.log("🔴 NO TOKEN → 401");
-    return Response.json({ detail: "Unauthorized" }, { status: 401 });
+  if (!token) {
+    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
+      status: 401,
+    });
   }
 
-  const res = await fetch(`${API_BASE}/api/contacts/${id}`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
 
-  const data = await res.json();
-  return Response.json(data, { status: res.status });
+  return new Response(await res.text(), {
+    status: res.status,
+  });
 }
 
 export async function PATCH(
@@ -33,28 +33,55 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  const cookieStore = await cookies();
-  const access = cookieStore.get("access")?.value;
+  const token = (await cookies()).get("access")?.value;
 
-  console.log("🟡 INTERNAL PATCH HIT:", req.url);
-  console.log("🟡 ACCESS TOKEN:", access);
-
-  if (!access) {
-    return Response.json({ detail: "Unauthorized" }, { status: 401 });
+  if (!token) {
+    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
+      status: 401,
+    });
   }
 
   const body = await req.json();
 
-  const res = await fetch(`${API_BASE}/api/contacts/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
     method: "PATCH",
     headers: {
-      Authorization: `Bearer ${access}`,
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
     cache: "no-store",
   });
 
-  const data = await res.text();
-  return new Response(data, { status: res.status });
+  return new Response(await res.text(), { status: res.status });
+}
+
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+  const token = (await cookies()).get("access")?.value;
+
+  console.log("🔴 INTERNAL DELETE:", id);
+
+  if (!token) {
+    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
+      status: 401,
+    });
+  }
+
+  // Forward DELETE to Django
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  // Django returns 204 No Content
+  if (res.status === 204) {
+    return new Response(null, { status: 204 });
+  }
+
+  return new Response(await res.text(), { status: res.status });
 }

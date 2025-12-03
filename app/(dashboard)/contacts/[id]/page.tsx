@@ -1,4 +1,4 @@
-// app/(crm)/contacts/[id]/page.tsx
+// app/(dashboard)/contacts/[id]/page.tsx
 
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -9,8 +9,8 @@ export default async function ContactDetailPage(props: {
 }) {
   const { id } = await props.params;
 
+  // Read token server-side
   const token = (await cookies()).get("access")?.value;
-
   if (!token) {
     return (
       <div className="p-6">
@@ -22,8 +22,8 @@ export default async function ContactDetailPage(props: {
     );
   }
 
+  // Fetch from Django API — correct for server components
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-
   const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
@@ -42,15 +42,19 @@ export default async function ContactDetailPage(props: {
 
   const contact = await res.json();
 
+  // ---- Owner fallback logic ----
+ const ownerName = contact.owner || "Unassigned";
+
   return (
     <div className="space-y-6 max-w-3xl">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
             {contact.first_name} {contact.last_name}
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Owned by {contact.owner || "—"}
+            Owned by {ownerName}
           </p>
         </div>
 
@@ -65,6 +69,7 @@ export default async function ContactDetailPage(props: {
         </div>
       </div>
 
+      {/* Contact Info */}
       <div className="dashboard-card">
         <h2 className="dashboard-section-title mb-3">Contact Info</h2>
 
@@ -87,14 +92,15 @@ export default async function ContactDetailPage(props: {
           <div>
             <p className="text-zinc-500">Tags</p>
             <p className="font-medium">
-              {contact.tags.length
-                ? contact.tags.map((t) => t.name).join(", ")
+              {contact.tags?.length
+                ? contact.tags.map((t: any) => t.name).join(", ")
                 : "—"}
             </p>
           </div>
         </div>
       </div>
 
+      {/* Notes */}
       <div className="dashboard-card">
         <h2 className="dashboard-section-title mb-3">Notes</h2>
         <p className="text-sm whitespace-pre-wrap">
