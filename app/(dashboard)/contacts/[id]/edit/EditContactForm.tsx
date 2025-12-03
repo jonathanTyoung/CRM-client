@@ -48,29 +48,36 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     async function loadMeta() {
       try {
         const [tagsRes, sourcesRes] = await Promise.all([
-          fetch("/api/tags", { credentials: "include" }),       // 🔥 FIX #1
-          fetch("/api/sources", { credentials: "include" }),    // 🔥 FIX #2
+          fetch("/api/tags"),
+          fetch("/api/sources"),
         ]);
 
-        const [tagsData, sourcesData] = await Promise.all([
-          tagsRes.json(),
-          sourcesRes.json(),
-        ]);
+        // ✔️ Safe fallback: if the table doesn’t exist or returns 404,
+        // treat it as “empty list” instead of erroring.
+        const tagsData = tagsRes.ok ? await tagsRes.json() : [];
+        const sourcesData = sourcesRes.ok ? await sourcesRes.json() : [];
 
         setTags(tagsData);
         setSources(sourcesData);
-      } catch (err: any) {
-        setError("Failed to load tags/sources");
+      } catch (err) {
+        console.error("Metadata fetch error:", err);
+        // ⚠️ Only show error when there is a REAL network/fetch failure.
+        setError(
+          "Unable to load metadata. Tags and sources may not exist yet."
+        );
       } finally {
         setLoadingMeta(false);
       }
     }
+
     loadMeta();
   }, []);
 
   // ------- Form Handlers -------
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -93,7 +100,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     try {
       const res = await fetch(`/api/contacts/${contact.id}`, {
         method: "PATCH",
-        credentials: "include",                        // 🔥 FIX #3
+        credentials: "include", // 🔥 FIX #3
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: form.first_name,

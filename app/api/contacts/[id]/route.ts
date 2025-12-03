@@ -32,3 +32,40 @@ export async function DELETE(
     headers: { "Content-Type": "application/json" },
   });
 }
+
+// PATCH /api/contacts/:id  → proxy to Django (update)
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access")?.value;
+
+  if (!token) {
+    return new Response(
+      JSON.stringify({ detail: "Not authenticated" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  const body = await request.json();
+
+  const res = await fetch(`${BASE_URL}/api/contacts/${params.id}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await res.text();
+
+  return new Response(text || null, {
+    status: res.status,
+    headers: { "Content-Type": "application/json" },
+  });
+}

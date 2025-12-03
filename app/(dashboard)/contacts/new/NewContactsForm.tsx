@@ -32,7 +32,7 @@ export default function NewContactForm() {
     tag_ids: [] as number[],
   });
 
-  // Fetch tags and sources on mount
+  // ------- Load Tags + Sources Safely (404 = empty list) -------
   useEffect(() => {
     async function loadMeta() {
       try {
@@ -41,19 +41,15 @@ export default function NewContactForm() {
           fetch("/api/sources"),
         ]);
 
-        if (!tagsRes.ok || !sourcesRes.ok) {
-          throw new Error("Failed to load metadata.");
-        }
-
-        const [tagsData, sourcesData] = await Promise.all([
-          tagsRes.json(),
-          sourcesRes.json(),
-        ]);
+        // Safe fallback: if backend returns 404 or 500 → treat as empty arrays
+        const tagsData = tagsRes.ok ? await tagsRes.json() : [];
+        const sourcesData = sourcesRes.ok ? await sourcesRes.json() : [];
 
         setTags(tagsData);
         setSources(sourcesData);
       } catch (err: any) {
-        setError(err.message || "Failed to load tags/sources.");
+        console.error("Metadata fetch error:", err);
+        setError("Unable to load metadata. Tags and sources may not exist yet.");
       } finally {
         setLoading(false);
       }
@@ -62,6 +58,7 @@ export default function NewContactForm() {
     loadMeta();
   }, []);
 
+  // ------- Form Handlers -------
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
@@ -81,6 +78,7 @@ export default function NewContactForm() {
     });
   }
 
+  // ------- Submit Handler -------
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -123,6 +121,7 @@ export default function NewContactForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="text-sm text-red-500">{error}</p>}
 
+      {/* Name Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">First name</label>
@@ -147,6 +146,7 @@ export default function NewContactForm() {
         </div>
       </div>
 
+      {/* Email & Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Email</label>
@@ -170,6 +170,7 @@ export default function NewContactForm() {
         </div>
       </div>
 
+      {/* Notes */}
       <div>
         <label className="block text-sm font-medium mb-1">Notes</label>
         <textarea
@@ -181,6 +182,7 @@ export default function NewContactForm() {
         />
       </div>
 
+      {/* Source & Tags */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Source</label>
@@ -219,6 +221,7 @@ export default function NewContactForm() {
         </div>
       </div>
 
+      {/* Footer */}
       <div className="pt-4 flex justify-end gap-2">
         <button
           type="button"
