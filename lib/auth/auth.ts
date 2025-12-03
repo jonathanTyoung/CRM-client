@@ -1,4 +1,4 @@
-// /lib/auth/auth.ts
+// lib/auth/auth.ts
 import { cookies } from "next/headers";
 
 export const auth = {
@@ -10,21 +10,17 @@ export const auth = {
     const token = this.getAccessToken();
     if (!token) return null;
 
-    // SSR REQUIRES absolute URL
-    const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const BASE_URL =
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     const res = await fetch(`${BASE_URL}/api/current_user`, {
       method: "GET",
       cache: "no-store",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: "include",
     });
 
-    const data = await res.json();
+    if (!res.ok) return null;
 
-    if (!data.authenticated) return null;
-
-    return data.user;
+    return res.json(); // Django already returns the user object
   },
 };
