@@ -6,7 +6,7 @@ import ProtectedClient from "./ProtectedClient";
 
 export default async function DashboardLayout({ children }) {
   // SSR: get user (may be null briefly — that’s fine)
-  const user = await auth.getUser();
+  const user = await auth();
 
   return (
     <ProtectedClient>

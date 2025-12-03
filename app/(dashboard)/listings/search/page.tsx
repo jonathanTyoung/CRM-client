@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "../../../../lib/auth";
+import { auth } from "../../../../lib/auth/auth.js";
 
 export default async function SearchListingsPage() {
-  const user = await getCurrentUser();
+  const user = await auth();
   if (!user) redirect("/login");
 
   return (

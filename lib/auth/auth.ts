@@ -1,26 +1,27 @@
 // lib/auth/auth.ts
 import { cookies } from "next/headers";
 
-export const auth = {
-  getAccessToken() {
-    return cookies().get("access")?.value || null;
-  },
+export async function auth() {
+  // 1. Read JWT from incoming request's cookies
+  const token = cookies().get("access")?.value;
+  if (!token) return null;
 
-  async getUser() {
-    const token = this.getAccessToken();
-    if (!token) return null;
+  // 2. Call Django directly (server-to-server, no CORS issues)
+  const DJANGO_URL = process.env.DJANGO_API_URL!;
+  const res = await fetch(`${DJANGO_URL}/api/current_user/`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
 
-    const BASE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  if (!res.ok) {
+    return null;
+  }
 
-    const res = await fetch(`${BASE_URL}/api/current_user`, {
-      method: "GET",
-      cache: "no-store",
-      credentials: "include",
-    });
-
-    if (!res.ok) return null;
-
-    return res.json(); // Django already returns the user object
-  },
-};
+  // 3. Django returns the user object directly:
+  // { id, email, first_name, last_name }
+  const user = await res.json();
+  return user;
+}

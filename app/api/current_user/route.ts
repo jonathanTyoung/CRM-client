@@ -1,38 +1,35 @@
-export const runtime = "nodejs";
-
 import { cookies } from "next/headers";
 
 export async function GET() {
-  const access = cookies().get("access")?.value;
-  console.log("SERVER ACCESS:", access);
+  const token = cookies().get("access")?.value;
 
-  // 🔹 No token -> not authenticated (but NOT a 401)
-  if (!access) {
+  if (!token) {
     return Response.json(
       { authenticated: false, user: null },
       { status: 200 }
     );
   }
 
-  // 🔹 Hit Django
-  const res = await fetch(`${process.env.DJANGO_API_URL}/api/current_user/`, {
+  // Use Django URL — NEVER NEXT_PUBLIC inside server routes
+  const DJANGO_URL = process.env.DJANGO_API_URL!;
+
+  const res = await fetch(`${DJANGO_URL}/api/current_user/`, {
+    method: "GET",
     headers: {
-      Authorization: `Bearer ${access}`,
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
   });
 
-  // 🔹 Token invalid → treat as unauthenticated
   if (!res.ok) {
     return Response.json(
       { authenticated: false, user: null },
-      { status: 200 }
+      { status: res.status }
     );
   }
 
   const user = await res.json();
 
-  // 🔹 Success
   return Response.json(
     { authenticated: true, user },
     { status: 200 }

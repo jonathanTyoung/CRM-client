@@ -8,7 +8,11 @@ export default function ProtectedClient({ children }) {
 
   useEffect(() => {
     async function verify() {
-      const res = await fetch("/api/current_user", { cache: "no-store" });
+      const res = await fetch("/api/current_user", {
+        cache: "no-store",
+        credentials: "include",  // <-- REQUIRED
+      });
+
       const data = await res.json();
 
       if (!data.authenticated) {
@@ -17,7 +21,7 @@ export default function ProtectedClient({ children }) {
     }
 
     verify();
-  }, []);
+  }, [router]);
 
   return <>{children}</>;
 }

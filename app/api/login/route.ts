@@ -1,3 +1,4 @@
+// app/api/login/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
@@ -8,7 +9,6 @@ export async function POST(req: Request) {
 
     const DJANGO_URL = process.env.DJANGO_API_URL!;
 
-    // Call Django login endpoint
     const res = await fetch(`${DJANGO_URL}/api/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,18 +23,12 @@ export async function POST(req: Request) {
 
     const { access, refresh, user } = data;
 
-    // --------------------------
-    // CREATE RESPONSE FIRST
-    // --------------------------
     const response = NextResponse.json({ user }, { status: 200 });
 
-    // --------------------------
-    // ATTACH COOKIES TO RESPONSE
-    // --------------------------
     response.cookies.set("access", access, {
       httpOnly: true,
-      secure: false, // localhost ALWAYS false
-      sameSite: "lax", // works with navigation redirect
+      secure: false,      // dev only; change to true in prod
+      sameSite: "lax",
       path: "/",
     });
 
@@ -44,6 +38,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       path: "/",
     });
+
     console.log("Cookie after set:", response.cookies.get("access"));
 
     return response;

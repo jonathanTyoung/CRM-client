@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { getCurrentUser } from "../../../lib/auth/getCurrentUser";
+import { auth } from "../../../lib/auth/auth";
 
-// Placeholder data — will be replaced by real API calls
 const stats = [
   { label: "Total Contacts", value: "—", hint: "All contacts in your CRM" },
   { label: "Active Leads", value: "—", hint: "Leads not yet closed" },
@@ -26,7 +25,7 @@ const recentActivity = [
 ];
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
+  const user = await auth();  // <-- Updated
 
   const totalPipelineCount = pipelineStages.reduce(
     (sum, stage) => sum + stage.count,
@@ -35,10 +34,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back, {user?.first_name} 
+          Welcome back, {user?.first_name}
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Snapshot of your contacts, leads, and deal pipeline.
