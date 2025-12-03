@@ -4,7 +4,7 @@ export default function SidebarLogoutButton() {
   return (
     <button
       onClick={async () => {
-        await fetch("/internal/logout", {
+        await fetch("/api/logout", {
           method: "POST",
           credentials: "include",
           cache: "no-store",

@@ -48,8 +48,8 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     async function loadMeta() {
       try {
         const [tagsRes, sourcesRes] = await Promise.all([
-          fetch("/internal/tags", { credentials: "include" }),       // 🔥 FIX #1
-          fetch("/internal/sources", { credentials: "include" }),    // 🔥 FIX #2
+          fetch("/api/tags", { credentials: "include" }),       // 🔥 FIX #1
+          fetch("/api/sources", { credentials: "include" }),    // 🔥 FIX #2
         ]);
 
         const [tagsData, sourcesData] = await Promise.all([
@@ -91,7 +91,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     setError("");
 
     try {
-      const res = await fetch(`/internal/contacts/${contact.id}`, {
+      const res = await fetch(`/api/contacts/${contact.id}`, {
         method: "PATCH",
         credentials: "include",                        // 🔥 FIX #3
         headers: { "Content-Type": "application/json" },

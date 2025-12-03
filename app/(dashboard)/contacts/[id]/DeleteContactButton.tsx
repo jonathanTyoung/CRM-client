@@ -15,7 +15,7 @@ export function DeleteContactButton({ id }: { id: number }) {
     setLoading(true);
 
     // IMPORTANT: use internal route, not Django
-    const res = await fetch(`/internal/contacts/${id}`, {
+    const res = await fetch(`/api/contacts/${id}`, {
       method: "DELETE",
       credentials: "include",
     });

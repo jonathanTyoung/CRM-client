@@ -1,46 +1,60 @@
-// app/(dashboard)/contacts/page.tsx
-
 import { cookies } from "next/headers";
-import ContactsTable from "./ContactsTable";
 
-export default async function ContactsPage({ searchParams }) {
-  const { page = "1", search = "" } = await searchParams;
+export const dynamic = "force-dynamic"; // ensure SSR runs fresh each load
 
-  // Read httpOnly token on the server
-  const access = (await cookies()).get("access")?.value;
-  if (!access) {
-    return <div>You must be logged in.</div>;
+export default async function ContactsPage() {
+  // 1. Read JWT access token from cookies
+  const token = cookies().get("access")?.value;
+
+  if (!token) {
+    // If somehow we reach here without auth, fail gracefully
+    return (
+      <div className="p-6">
+        <h1 className="text-xl font-semibold">Unauthorized</h1>
+        <p>Please log in again.</p>
+      </div>
+    );
   }
 
-  // Build Django URL
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-  const url = new URL("/api/contacts", BASE_URL);
-  url.searchParams.set("page", page);
-  if (search) url.searchParams.set("search", search);
-
-  console.log("🟡 SERVER → DJANGO:", url.toString());
-
-  // Fetch directly from Django (correct for server components)
-  const res = await fetch(url, {
+  // 2. Fetch contacts from Django API
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contacts`, {
     headers: {
-      Authorization: `Bearer ${access}`,
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
   });
 
-  if (!res.ok) {
-    return <div>Failed to load contacts. Status: {res.status}</div>;
-  }
-
   const data = await res.json();
 
+  // 3. Normalize DRF response (pagination OR raw list)
+  const contacts = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.results)
+    ? data.results
+    : [];
+
+  // 4. Render UI
   return (
-    <div className="p-6">
-      <ContactsTable
-        data={data}
-        currentPage={Number(page)}
-        searchQuery={search}
-      />
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-semibold mb-6">Contacts</h1>
+
+      {contacts.length === 0 ? (
+        <p className="text-zinc-500">No contacts found.</p>
+      ) : (
+        <ul className="space-y-2">
+          {contacts.map((c) => (
+            <li
+              key={c.id}
+              className="p-3 border rounded bg-white shadow-sm hover:bg-zinc-50"
+            >
+              <p className="font-medium">
+                {c.first_name} {c.last_name}
+              </p>
+              <p className="text-sm text-zinc-600">{c.email}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

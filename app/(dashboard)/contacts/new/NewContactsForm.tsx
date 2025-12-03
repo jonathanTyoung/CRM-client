@@ -37,8 +37,8 @@ export default function NewContactForm() {
     async function loadMeta() {
       try {
         const [tagsRes, sourcesRes] = await Promise.all([
-          fetch("/internal/tags"),
-          fetch("/internal/sources"),
+          fetch("/api/tags"),
+          fetch("/api/sources"),
         ]);
 
         if (!tagsRes.ok || !sourcesRes.ok) {
@@ -87,7 +87,7 @@ export default function NewContactForm() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/internal/contacts", {
+      const res = await fetch("/api/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

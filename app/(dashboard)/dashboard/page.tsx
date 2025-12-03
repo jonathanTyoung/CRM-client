@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "../../../lib/auth";
+import { getCurrentUser } from "../../../lib/auth/getCurrentUser";
 
 // Placeholder data — will be replaced by real API calls
 const stats = [

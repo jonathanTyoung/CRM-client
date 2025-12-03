@@ -18,6 +18,30 @@ export default function Sidebar({ user }: { user: any }) {
     window.location.href = "/login";
   }
 
+  // ---------------------------------------------------------
+  // ⭐ NULL-SAFE LOADING STATE
+  // On first SSR render, user === null (intended!).
+  // Prevent crashes & avoid hydration mismatches.
+  // ---------------------------------------------------------
+  if (!user) {
+    return (
+      <aside className="w-64 p-4 border-r dark:border-zinc-800 flex flex-col animate-pulse">
+        <h2 className="text-xl font-bold mb-6 text-zinc-300">Loading...</h2>
+        <div className="flex flex-col gap-4 flex-1">
+          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-32"></div>
+          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-40"></div>
+          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-24"></div>
+        </div>
+        <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
+          Checking authentication...
+        </div>
+      </aside>
+    );
+  }
+
+  // ---------------------------------------------------------
+  // ⭐ REAL SIDEBAR WHEN USER EXISTS
+  // ---------------------------------------------------------
   return (
     <aside className="w-64 p-4 border-r dark:border-zinc-800 flex flex-col">
       <h2 className="text-xl font-bold mb-6">The Gomes Agency</h2>
@@ -48,7 +72,7 @@ export default function Sidebar({ user }: { user: any }) {
                   );
                 }
 
-                // 👉 Non-collapsible LINK (no children)
+                // 👉 Non-collapsible LINK
                 if (!hasChildren) {
                   return (
                     <Link
@@ -66,7 +90,7 @@ export default function Sidebar({ user }: { user: any }) {
                   );
                 }
 
-                // 👉 Collapsible parent (with children)
+                // 👉 Collapsible parent
                 const isOpen = open[item.href] ?? isActive(item.href);
 
                 return (
@@ -118,7 +142,7 @@ export default function Sidebar({ user }: { user: any }) {
       <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
         Logged in as{" "}
         <span className="font-medium">
-          {user.email || user.username || "Agent"}
+          {user.email || user.first_name || "Agent"}
         </span>
       </div>
     </aside>
