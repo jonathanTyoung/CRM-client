@@ -9,12 +9,16 @@ interface Contact {
   email: string | null;
 }
 
+interface Participant {
+  contact: Contact;
+}
+
 export default function ParticipantSelector({
   selected,
   onChange,
 }: {
-  selected: any[];
-  onChange: (updated: any[]) => void;
+  selected: Participant[];
+  onChange: (updated: Participant[]) => void;
 }) {
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Contact[]>([]);
@@ -31,13 +35,13 @@ export default function ParticipantSelector({
   // Debounced search
   useEffect(() => {
     const delay = setTimeout(() => {
-      if (search.trim().length > 1) fetchSearchResults();
+      if (search.trim().length > 1) fetchSearch();
       else setResults([]);
     }, 300);
     return () => clearTimeout(delay);
   }, [search]);
 
-  async function fetchSearchResults() {
+  async function fetchSearch() {
     setLoading(true);
     const res = await fetch(`/api/contacts?search=${search}`);
     const data = await res.json();
@@ -45,20 +49,23 @@ export default function ParticipantSelector({
     setLoading(false);
   }
 
-  // Add participant
+  // ----------------------------
+  // ADD PARTICIPANT
+  // ----------------------------
   function addParticipant(contact: Contact) {
-    if (selected.some((p) => p.contact === contact.id)) return;
+    // avoid duplicates
+    if (selected.some((p) => p.contact.id === contact.id)) return;
 
-    const updated = [...selected, { contact: contact.id }];
-
-    onChange(updated);
+    onChange([...selected, { contact }]);
     setSearch("");
     setResults([]);
   }
 
-  // Remove participant
+  // ----------------------------
+  // REMOVE PARTICIPANT
+  // ----------------------------
   function removeParticipant(id: number) {
-    onChange(selected.filter((p) => p.contact !== id));
+    onChange(selected.filter((p) => p.contact.id !== id));
   }
 
   return (
@@ -67,7 +74,7 @@ export default function ParticipantSelector({
         Participants
       </label>
 
-      {/* Search input */}
+      {/* Search */}
       <input
         type="text"
         placeholder="Search contacts..."
@@ -109,25 +116,18 @@ export default function ParticipantSelector({
       {/* Selected Chips */}
       <div className="flex flex-wrap gap-2 mt-2">
         {selected.map((p) => {
-          // Normalize all possible formats:
-          // p.contact → number OR object
-          const contactObj =
-            typeof p.contact === "object" && p.contact !== null
-              ? p.contact
-              : results.find((r) => r.id === p.contact);
-
-          const id = typeof p.contact === "object" ? p.contact.id : p.contact;
-
-          const display = contactObj ? labelFor(contactObj) : `Contact #${id}`;
+          const c = p.contact;
+          const display = labelFor(c);
 
           return (
             <span
-              key={id}
+              key={c.id}
               className="px-3 py-1 bg-blue-600 text-white rounded-full flex items-center gap-2 shadow"
             >
               {display}
               <button
-                onClick={() => removeParticipant(id)}
+                type="button"
+                onClick={() => removeParticipant(c.id)}
                 className="text-white hover:text-red-300 text-sm"
               >
                 ✕
