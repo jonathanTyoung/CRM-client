@@ -1,28 +1,19 @@
 import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const token = cookies().get("access")?.value;
 
   if (!token) {
     return Response.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = searchParams.get("page") || "";
-  const search = searchParams.get("search") || "";
-
-  const query = new URLSearchParams();
-  if (page) query.append("page", page);
-  if (search) query.append("search", search);
-
-  const backendUrl = `${
-    process.env.NEXT_PUBLIC_API_URL
-  }/api/contacts/?${query.toString()}`;
+  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${params.id}/`;
 
   const backendRes = await fetch(backendUrl, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
 
@@ -30,7 +21,10 @@ export async function GET(request: Request) {
   return Response.json(data, { status: backendRes.status });
 }
 
-export async function POST(request: Request) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const token = cookies().get("access")?.value;
 
   if (!token) {
@@ -38,11 +32,10 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-
-  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/contacts/`;
+  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${params.id}/`;
 
   const backendRes = await fetch(backendUrl, {
-    method: "POST",
+    method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
