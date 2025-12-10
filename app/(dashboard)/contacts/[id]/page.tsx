@@ -2,57 +2,76 @@
 
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { DeleteContactButton } from "./DeleteContactButton";
 
+// -----------------------------
+// Types — based on your model
+// -----------------------------
+interface Owner {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+}
+
+interface Source {
+  id: number;
+  name: string;
+}
+
+interface Contact {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  source: Source | null;
+  tags: Tag[];
+  owner: Owner | null;
+}
+
+// -----------------------------
+// PAGE COMPONENT (Server)
+// -----------------------------
 export default async function ContactDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await props.params;
 
-  // Read token server-side
+  // Read token from httpOnly cookies
   const token = (await cookies()).get("access")?.value;
-  if (!token) {
-    return (
-      <div className="p-6">
-        <p className="text-red-500 text-sm">You must be logged in.</p>
-        <Link href="/login" className="btn-secondary mt-4 inline-block">
-          Go to Login
-        </Link>
-      </div>
-    );
-  }
+  if (!token) redirect("/login");
 
-  // Fetch from Django API — correct for server components
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}/`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
 
-  if (!res.ok) {
-    return (
-      <div className="p-6">
-        <p className="text-red-500 text-sm">Contact not found.</p>
-        <Link href="/contacts" className="btn-secondary mt-4 inline-block">
-          ← Back to contacts
-        </Link>
-      </div>
-    );
-  }
+  if (!res.ok) redirect("/contacts");
 
-  const contact = await res.json();
+  const contact: Contact = await res.json();
 
-  // ---- Owner fallback logic ----
- const ownerName = contact.owner || "Unassigned";
+  // Safe field extractions
+  const fullName = `${contact.first_name} ${contact.last_name}`.trim();
+  const ownerName = contact.owner?.name ?? "Unassigned";
+  const sourceName = contact.source?.name ?? "—";
+  const tagsText =
+    contact.tags?.length ? contact.tags.map((t) => t.name).join(", ") : "—";
+  const notesText = contact.notes?.trim() || "No notes added yet.";
 
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">
-            {contact.first_name} {contact.last_name}
-          </h1>
+          <h1 className="text-2xl font-semibold">{fullName}</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Owned by {ownerName}
           </p>
@@ -86,16 +105,12 @@ export default async function ContactDetailPage(props: {
 
           <div>
             <p className="text-zinc-500">Source</p>
-            <p className="font-medium">{contact.source?.name || "—"}</p>
+            <p className="font-medium">{sourceName}</p>
           </div>
 
           <div>
             <p className="text-zinc-500">Tags</p>
-            <p className="font-medium">
-              {contact.tags?.length
-                ? contact.tags.map((t: any) => t.name).join(", ")
-                : "—"}
-            </p>
+            <p className="font-medium">{tagsText}</p>
           </div>
         </div>
       </div>
@@ -103,9 +118,7 @@ export default async function ContactDetailPage(props: {
       {/* Notes */}
       <div className="dashboard-card">
         <h2 className="dashboard-section-title mb-3">Notes</h2>
-        <p className="text-sm whitespace-pre-wrap">
-          {contact.notes?.trim() || "No notes added yet."}
-        </p>
+        <p className="text-sm whitespace-pre-wrap">{notesText}</p>
       </div>
     </div>
   );

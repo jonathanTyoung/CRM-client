@@ -48,8 +48,8 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     async function loadMeta() {
       try {
         const [tagsRes, sourcesRes] = await Promise.all([
-          fetch("/api/tags"),
-          fetch("/api/sources"),
+          fetch("/api/tags/"),
+          fetch("/api/sources/"),
         ]);
 
         // ✔️ Safe fallback: if the table doesn’t exist or returns 404,
@@ -98,7 +98,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     setError("");
 
     try {
-      const res = await fetch(`/api/contacts/${contact.id}`, {
+      const res = await fetch(`/api/contacts/${contact.id}/`, {
         method: "PATCH",
         credentials: "include", // 🔥 FIX #3
         headers: { "Content-Type": "application/json" },
@@ -118,7 +118,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
         throw new Error(data?.detail || "Failed to update contact.");
       }
 
-      router.push(`/contacts/${contact.id}`);
+      router.push(`/contacts/${contact.id}/`);
     } catch (err: any) {
       setError(err.message);
     } finally {

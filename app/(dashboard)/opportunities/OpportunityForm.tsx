@@ -2,59 +2,56 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ParticipantSelector from "./ParticipantSelector";
 
-// --------------------------------------
-// CONDITIONAL STAGES FOR BUYER / SELLER
-// --------------------------------------
-const STAGES = {
-  buyer: [
-    { value: "prospecting", label: "Prospecting" },
-    { value: "agreement_signed", label: "Agreement Signed" },
-    { value: "showing", label: "Showing" },
-    { value: "offer_made", label: "Offer Made" },
-    { value: "under_contract", label: "Under Contract" },
-    { value: "closed", label: "Closed" },
-  ],
-  seller: [
-    { value: "prospecting", label: "Prospecting" },
-    { value: "appointment_set", label: "Appointment Set" },
-    { value: "appointment_held", label: "Appointment Held" },
-    { value: "agreement_signed", label: "Agreement Signed" },
-    { value: "listed", label: "Listed" },
-    { value: "under_contract", label: "Under Contract" },
-    { value: "closed", label: "Closed" },
-  ],
-};
+// Stage definitions
+const BUYER_STAGES = [
+  { value: "prospecting", label: "Prospecting" },
+  { value: "agreement_signed", label: "Agreement Signed" },
+  { value: "showing", label: "Showing" },
+  { value: "offer", label: "Offer Made" },
+  { value: "contract", label: "Under Contract" },
+  { value: "closed", label: "Closed" },
+];
+
+const SELLER_STAGES = [
+  { value: "prospecting", label: "Prospecting" },
+  { value: "appointment_set", label: "Appointment Set" },
+  { value: "appointment_held", label: "Appointment Held" },
+  { value: "agreement_signed", label: "Agreement Signed" },
+  { value: "listed", label: "Listed" },
+  { value: "contract", label: "Under Contract" },
+  { value: "closed", label: "Closed" },
+];
 
 export default function OpportunityForm({ mode, initialData }: any) {
   const router = useRouter();
 
-  // --------------------------------------
-  // FORM STATE
-  // --------------------------------------
   const [form, setForm] = useState({
-    deal_type: initialData?.deal_type || "buyer",
-    stage: initialData?.stage || STAGES[initialData?.deal_type || "buyer"][0].value,
     title: initialData?.title || "",
+    deal_type: initialData?.deal_type || "buyer",
+    stage: initialData?.stage || "prospecting",
     property_address: initialData?.property_address || "",
     mls_id: initialData?.mls_id || "",
     price: initialData?.price || "",
     estimated_close_date: initialData?.estimated_close_date || "",
     notes: initialData?.notes || "",
+    participants: initialData?.participants || [],
   });
 
-  // --------------------------------------
-  // INPUT HANDLERS
-  // --------------------------------------
-  function handleInput(name: string, value: any) {
-    setForm((prev) => ({ ...prev, [name]: value }));
+  function handleChange(e: any) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSelectDealType(newType: string) {
+  function handleDealTypeChange(e: any) {
+    const type = e.target.value;
+    const defaultStage =
+      type === "seller" ? SELLER_STAGES[0].value : BUYER_STAGES[0].value;
+
     setForm((prev) => ({
       ...prev,
-      deal_type: newType,
-      stage: STAGES[newType][0].value, // reset stage when switching type
+      deal_type: type,
+      stage: defaultStage,
     }));
   }
 
@@ -74,184 +71,138 @@ export default function OpportunityForm({ mode, initialData }: any) {
       body: JSON.stringify(form),
     });
 
-    if (res.ok) {
-      router.push("/opportunities");
-    } else {
-      console.error(await res.text());
-    }
+    if (res.ok) router.push("/opportunities");
+    else console.error(await res.text());
   }
 
-  // --------------------------------------
-  // STYLES
-  // --------------------------------------
-  const inputClass =
-    "w-full rounded-lg px-3 py-2 bg-neutral-100 dark:bg-neutral-800 " +
+  const stages =
+    form.deal_type === "seller" ? SELLER_STAGES : BUYER_STAGES;
+
+  const input =
+    "w-full px-3 py-2 rounded-lg shadow-sm " +
+    "bg-white dark:bg-neutral-800 " +
     "border border-neutral-300 dark:border-neutral-700 " +
-    "text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 " +
-    "dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50";
+    "text-neutral-900 dark:text-neutral-100 " +
+    "focus:outline-none focus:ring-2 focus:ring-blue-500/40";
 
-  const labelClass = "block mb-1 font-medium text-neutral-700 dark:text-neutral-300";
-
-  const sectionHeader =
-    "text-lg font-semibold text-neutral-900 dark:text-neutral-100 " +
-    "border-b border-neutral-200 dark:border-neutral-700 pb-2 mb-4";
-
-  // --------------------------------------
-  // DYNAMIC PLACEHOLDERS
-  // --------------------------------------
-  const titlePlaceholder =
-    form.deal_type === "buyer"
-      ? "Ex: 1234 Elm St – Buyer Lead"
-      : "Ex: 1234 Elm St – Listing Opportunity";
-
-  const addressPlaceholder = "Ex: 1234 Elm St, Nashville TN 37212";
-  const mlsPlaceholder = "Ex: 2571983";
-  const pricePlaceholder = "Ex: 525000";
+  const label =
+    "block mb-1 font-medium text-neutral-700 dark:text-neutral-300";
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full py-8 px-4 md:px-12 space-y-12 bg-white dark:bg-neutral-900"
+      className="
+        max-w-2xl mx-auto 
+        bg-neutral-50 dark:bg-neutral-900
+        border border-neutral-200 dark:border-neutral-800 
+        rounded-xl p-8 space-y-8 shadow
+      "
     >
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+      <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
         {mode === "create" ? "Create Opportunity" : "Edit Opportunity"}
       </h2>
 
-      {/* -------------------------------------- */}
-      {/* DEAL INFORMATION */}
-      {/* -------------------------------------- */}
-      <section>
-        <h3 className={sectionHeader}>Deal Information</h3>
+      {/* TITLE */}
+      <div>
+        <label className={label}>Title</label>
+        <input className={input} name="title" value={form.title} onChange={handleChange} required />
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* DEAL TYPE */}
-          <div>
-            <label className={labelClass}>Deal Type</label>
-            <select
-              value={form.deal_type}
-              onChange={(e) => handleSelectDealType(e.target.value)}
-              className={inputClass}
-            >
-              <option value="buyer">Buyer</option>
-              <option value="seller">Seller</option>
-            </select>
-          </div>
-
-          {/* STAGE */}
-          <div>
-            <label className={labelClass}>Stage</label>
-            <select
-              value={form.stage}
-              onChange={(e) => handleInput("stage", e.target.value)}
-              className={inputClass}
-            >
-              {STAGES[form.deal_type].map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* TITLE */}
-          <div className="md:col-span-2">
-            <label className={labelClass}>Title</label>
-            <input
-              name="title"
-              value={form.title}
-              onChange={(e) => handleInput("title", e.target.value)}
-              placeholder={titlePlaceholder}
-              className={inputClass}
-              required
-            />
-          </div>
+      {/* DEAL TYPE + STAGE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className={label}>Deal Type</label>
+          <select
+            className={input}
+            name="deal_type"
+            value={form.deal_type}
+            onChange={handleDealTypeChange}
+          >
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+          </select>
         </div>
-      </section>
 
-      {/* -------------------------------------- */}
-      {/* PROPERTY DETAILS */}
-      {/* -------------------------------------- */}
-      <section>
-        <h3 className={sectionHeader}>Property Details</h3>
-
-        <div className="space-y-6">
-          {/* ADDRESS */}
-          <div>
-            <label className={labelClass}>Property Address</label>
-            <input
-              name="property_address"
-              value={form.property_address}
-              onChange={(e) => handleInput("property_address", e.target.value)}
-              placeholder={addressPlaceholder}
-              className={inputClass}
-            />
-          </div>
-
-          {/* MLS + PRICE */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className={labelClass}>MLS ID</label>
-              <input
-                name="mls_id"
-                value={form.mls_id}
-                onChange={(e) => handleInput("mls_id", e.target.value)}
-                placeholder={mlsPlaceholder}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Price</label>
-              <input
-                name="price"
-                type="number"
-                value={form.price}
-                onChange={(e) => handleInput("price", e.target.value)}
-                placeholder={pricePlaceholder}
-                className={inputClass}
-              />
-            </div>
-          </div>
+        <div>
+          <label className={label}>Stage</label>
+          <select
+            className={input}
+            name="stage"
+            value={form.stage}
+            onChange={handleChange}
+          >
+            {stages.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
-      </section>
+      </div>
 
-      {/* -------------------------------------- */}
-      {/* TIMELINE */}
-      {/* -------------------------------------- */}
-      <section>
-        <h3 className={sectionHeader}>Timeline</h3>
+      {/* ADDRESS */}
+      <div>
+        <label className={label}>Property Address</label>
+        <input className={input} name="property_address" value={form.property_address} onChange={handleChange} />
+      </div>
 
-        <label className={labelClass}>Estimated Close Date</label>
+      {/* MLS + PRICE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className={label}>MLS ID</label>
+          <input className={input} name="mls_id" value={form.mls_id} onChange={handleChange} />
+        </div>
+
+        <div>
+          <label className={label}>Price</label>
+          <input
+            type="number"
+            className={input}
+            name="price"
+            value={form.price}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* DATE */}
+      <div>
+        <label className={label}>Estimated Close Date</label>
         <input
           type="date"
+          className={input}
           name="estimated_close_date"
           value={form.estimated_close_date}
-          onChange={(e) => handleInput("estimated_close_date", e.target.value)}
-          className={inputClass}
+          onChange={handleChange}
         />
-      </section>
+      </div>
 
-      {/* -------------------------------------- */}
       {/* NOTES */}
-      {/* -------------------------------------- */}
-      <section>
-        <h3 className={sectionHeader}>Notes</h3>
+      <div>
+        <label className={label}>Notes</label>
         <textarea
+          className={`${input} h-28`}
           name="notes"
           value={form.notes}
-          onChange={(e) => handleInput("notes", e.target.value)}
-          placeholder="Add deal context, deadlines, goals, or key details…"
-          className={`${inputClass} h-32`}
+          onChange={handleChange}
         />
-      </section>
+      </div>
 
-      {/* SUBMIT */}
+      {/* PARTICIPANTS */}
+      <ParticipantSelector
+        selected={form.participants}
+        onChange={(updated) =>
+          setForm((prev) => ({ ...prev, participants: updated }))
+        }
+      />
+
+      {/* SUBMIT BUTTON */}
       <button
         type="submit"
         className="
-          w-full mt-4 bg-blue-600 hover:bg-blue-700 
-          text-white font-medium py-3 rounded-lg 
-          transition shadow-sm
+          w-full mt-6 bg-blue-600 hover:bg-blue-700
+          text-white font-medium py-2.5 rounded-lg shadow
+          transition-all duration-200
         "
       >
         {mode === "create" ? "Create Opportunity" : "Save Changes"}

@@ -1,24 +1,22 @@
-// app/(dashboard)/contacts/[id]/edit/page.tsx
-
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import EditContactForm from "./EditContactForm";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function EditContactPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await props.params;
 
-  // Read JWT from httpOnly cookies
   const token = (await cookies()).get("access")?.value;
 
   if (!token) {
-    return <p className="text-red-500">Unauthorized. Please log in.</p>;
+    redirect("/login");
   }
 
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-  const res = await fetch(`${BASE_URL}/api/contacts/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/contacts/${id}/`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -26,15 +24,13 @@ export default async function EditContactPage(props: {
   });
 
   if (!res.ok) {
-    return <p className="text-red-500">Contact not found.</p>;
+    redirect("/contacts");
   }
 
   const contact = await res.json();
 
   return (
     <div className="max-w-xl space-y-6">
-
-      {/* Ghost Back Button */}
       <Link
         href={`/contacts/${id}`}
         className="inline-flex items-center text-sm font-medium text-zinc-600 hover:text-zinc-900 

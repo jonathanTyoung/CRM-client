@@ -17,7 +17,7 @@ export async function DELETE(
     );
   }
 
-  const res = await fetch(`${BASE_URL}/api/contacts/${params.id}`, {
+  const res = await fetch(`${BASE_URL}/api/contacts/${params.id}/`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -53,7 +53,7 @@ export async function PATCH(
 
   const body = await request.json();
 
-  const res = await fetch(`${BASE_URL}/api/contacts/${params.id}`, {
+  const res = await fetch(`${BASE_URL}/api/contacts/${params.id}/`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,

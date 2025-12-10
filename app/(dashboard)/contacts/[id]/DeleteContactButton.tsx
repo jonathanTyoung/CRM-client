@@ -10,8 +10,9 @@ export function DeleteContactButton({ id }: { id: number | string }) {
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
-    const res = await fetch(`/api/contacts/${id}`, {
+    const res = await fetch(`/api/contacts/${id}/`, {
       method: "DELETE",
+      credentials: "include", // optional but recommended
     });
 
     if (!res.ok) {
