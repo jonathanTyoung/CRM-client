@@ -6,19 +6,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 // GET /api/opportunities
 // ------------------------------------------------------------
 export async function GET(request: Request) {
-  const token = cookies().get("access")?.value;
+  const cookieStore = cookies();
+  const token = cookieStore.get("access")?.value;
 
   if (!token) {
-    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
+  const page = searchParams.get("page") || "1";
   const stage = searchParams.get("stage");
   const deal_type = searchParams.get("deal_type");
-  const page = searchParams.get("page") || "1";
 
   const query = new URLSearchParams();
   query.append("page", page);
@@ -28,7 +26,9 @@ export async function GET(request: Request) {
   const backendUrl = `${BASE_URL}/api/opportunities/?${query.toString()}`;
 
   const backendRes = await fetch(backendUrl, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
 
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 // POST /api/opportunities  (CREATE OPPORTUNITY)
 // ------------------------------------------------------------
 export async function POST(request: Request) {
-  console.log("POST /api/opportunities HIT");   // 💥 MUST PRINT
+  console.log("POST /api/opportunities HIT"); // 💥 MUST PRINT
 
   const token = cookies().get("access")?.value;
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  console.log("REQUEST BODY:", body);           // 💥 PRINT BODY
+  console.log("REQUEST BODY:", body); // 💥 PRINT BODY
 
   const backendUrl = `${BASE_URL}/api/opportunities/`;
 
@@ -72,8 +72,8 @@ export async function POST(request: Request) {
 
   const text = await backendRes.text();
 
-  console.log("DJANGO STATUS:", backendRes.status);   // 💥 PRINT STATUS
-  console.log("DJANGO ERROR PAYLOAD:", text);         // 💥 PRINT ERROR
+  console.log("DJANGO STATUS:", backendRes.status); // 💥 PRINT STATUS
+  console.log("DJANGO ERROR PAYLOAD:", text); // 💥 PRINT ERROR
   console.log("REQUEST BODY:", body);
 
   return new Response(text || null, {

@@ -1,28 +1,49 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 export default async function OpportunitiesPage({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string; stage?: string; type?: string };
+  searchParams: {
+    page?: string;
+    search?: string;
+    stage?: string;
+    type?: string;
+  };
 }) {
+  // Params
   const page = searchParams.page || "1";
   const search = searchParams.search || "";
   const stage = searchParams.stage || "";
   const type = searchParams.type || "";
 
+  // Query
   const query = new URLSearchParams();
   query.set("page", page);
   if (search) query.set("search", search);
   if (stage) query.set("stage", stage);
   if (type) query.set("deal_type", type);
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/opportunities?${query.toString()}`,
-    { cache: "no-store" }
-  );
+  // Build absolute URL SAFELY
+  const hdrs = headers();
+  const host = hdrs.get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const cookieHeader = hdrs.get("cookie") ?? "";
+
+  const apiUrl = `${protocol}://${host}/api/opportunities?${query.toString()}`;
+
+  console.log("FETCHING:", apiUrl);
+
+  // Fetch from proxy route
+  const res = await fetch(apiUrl, {
+    cache: "no-store",
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
 
   if (!res.ok) {
     console.error(await res.text());
@@ -35,6 +56,7 @@ export default async function OpportunitiesPage({
 
   return (
     <div className="space-y-6">
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
           Opportunities
@@ -48,38 +70,23 @@ export default async function OpportunitiesPage({
         </Link>
       </div>
 
-      {/* Filters + Search */}
+      {/* FILTERS */}
       <div className="flex flex-wrap gap-4 items-end">
-        {/* Search Input */}
         <form className="flex-1">
           <input
             type="text"
             name="search"
-            placeholder="Search opportunities..."
             defaultValue={search}
-            className="
-              w-full rounded-lg px-3 py-2
-              bg-neutral-100 dark:bg-neutral-800
-              border border-neutral-300 dark:border-neutral-700
-              text-neutral-900 dark:text-neutral-100
-              placeholder-neutral-400 dark:placeholder-neutral-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50
-            "
+            placeholder="Search opportunities..."
+            className="w-full rounded-lg px-3 py-2 border"
           />
         </form>
 
-        {/* Stage Filter */}
         <form>
           <select
             name="stage"
             defaultValue={stage}
-            className="
-              rounded-lg px-3 py-2
-              bg-neutral-100 dark:bg-neutral-800
-              border border-neutral-300 dark:border-neutral-700
-              text-neutral-900 dark:text-neutral-100
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50
-            "
+            className="rounded-lg px-3 py-2 border"
           >
             <option value="">All Stages</option>
             <option value="prospecting">Prospecting</option>
@@ -91,18 +98,11 @@ export default async function OpportunitiesPage({
           </select>
         </form>
 
-        {/* Deal Type Filter */}
         <form>
           <select
             name="type"
             defaultValue={type}
-            className="
-              rounded-lg px-3 py-2
-              bg-neutral-100 dark:bg-neutral-800
-              border border-neutral-300 dark:border-neutral-700
-              text-neutral-900 dark:text-neutral-100
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50
-            "
+            className="rounded-lg px-3 py-2 border"
           >
             <option value="">All Types</option>
             <option value="buyer">Buyer</option>
@@ -111,41 +111,23 @@ export default async function OpportunitiesPage({
         </form>
       </div>
 
-      {/* Table */}
-      <div
-        className="
-          overflow-hidden border border-neutral-200 dark:border-neutral-800 rounded-xl
-          bg-white dark:bg-neutral-900
-        "
-      >
+      {/* TABLE */}
+      <div className="border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-300 dark:border-neutral-700">
-            <tr>
-              <th className="text-left py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
-                Title
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
-                Stage
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
-                Type
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
-                Price
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
-                Updated
-              </th>
+          <thead>
+            <tr className="border-b">
+              <th className="py-3 px-4 text-left">Title</th>
+              <th className="py-3 px-4 text-left">Stage</th>
+              <th className="py-3 px-4 text-left">Type</th>
+              <th className="py-3 px-4 text-left">Price</th>
+              <th className="py-3 px-4 text-left">Updated</th>
             </tr>
           </thead>
 
           <tbody>
             {opportunities.length === 0 ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className="text-center py-6 text-neutral-500 dark:text-neutral-400"
-                >
+                <td colSpan={5} className="text-center py-6 text-neutral-500">
                   No opportunities found.
                 </td>
               </tr>
@@ -153,16 +135,12 @@ export default async function OpportunitiesPage({
               opportunities.map((opp: any) => (
                 <tr
                   key={opp.id}
-                  className="
-                    border-b border-neutral-200 dark:border-neutral-800
-                    hover:bg-neutral-100 dark:hover:bg-neutral-800
-                    transition cursor-pointer
-                  "
+                  className="border-b hover:bg-neutral-100 cursor-pointer"
                 >
                   <td className="py-3 px-4">
                     <Link
                       href={`/opportunities/${opp.id}`}
-                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                      className="text-blue-600 hover:underline"
                     >
                       {opp.title}
                     </Link>
@@ -172,7 +150,9 @@ export default async function OpportunitiesPage({
                   </td>
                   <td className="py-3 px-4 capitalize">{opp.deal_type}</td>
                   <td className="py-3 px-4">
-                    {opp.price ? `$${Number(opp.price).toLocaleString()}` : "--"}
+                    {opp.price
+                      ? `$${Number(opp.price).toLocaleString()}`
+                      : "--"}
                   </td>
                   <td className="py-3 px-4">
                     {new Date(opp.updated_at).toLocaleDateString()}
@@ -184,20 +164,18 @@ export default async function OpportunitiesPage({
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-3 mt-6">
           {Array.from({ length: totalPages }, (_, i) => (
             <Link
               key={i}
               href={`/opportunities?page=${i + 1}`}
-              className={`
-                px-3 py-1 rounded 
-                ${page == String(i + 1)
+              className={`px-3 py-1 rounded ${
+                page == String(i + 1)
                   ? "bg-blue-600 text-white"
-                  : "bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-                }
-              `}
+                  : "bg-neutral-200 text-neutral-700"
+              }`}
             >
               {i + 1}
             </Link>
