@@ -2,14 +2,17 @@ import { cookies } from "next/headers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-// ---------------------
+// ------------------------------------------------------------
 // GET /api/opportunities
-// ---------------------
+// ------------------------------------------------------------
 export async function GET(request: Request) {
   const token = cookies().get("access")?.value;
 
   if (!token) {
-    return Response.json({ detail: "Unauthorized" }, { status: 401 });
+    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { searchParams } = new URL(request.url);
@@ -22,7 +25,6 @@ export async function GET(request: Request) {
   if (stage) query.append("stage", stage);
   if (deal_type) query.append("deal_type", deal_type);
 
-  // 💥 ALWAYS TRAILING SLASH BEFORE QUERY
   const backendUrl = `${BASE_URL}/api/opportunities/?${query.toString()}`;
 
   const backendRes = await fetch(backendUrl, {
@@ -31,24 +33,33 @@ export async function GET(request: Request) {
   });
 
   const text = await backendRes.text();
+
   return new Response(text || null, {
     status: backendRes.status,
     headers: { "Content-Type": "application/json" },
   });
 }
 
-// ---------------------
-// POST /api/opportunities
-// ---------------------
+// ------------------------------------------------------------
+// POST /api/opportunities  (CREATE OPPORTUNITY)
+// ------------------------------------------------------------
 export async function POST(request: Request) {
+  console.log("POST /api/opportunities HIT");   // 💥 MUST PRINT
+
   const token = cookies().get("access")?.value;
 
   if (!token) {
-    return Response.json({ detail: "Unauthorized" }, { status: 401 });
+    console.log("NO TOKEN FOR OPPORTUNITIES");
+    return new Response(JSON.stringify({ detail: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const body = await request.json();
-  const backendUrl = `${BASE_URL}/api/opportunities/`; // ✔ trailing slash
+  console.log("REQUEST BODY:", body);           // 💥 PRINT BODY
+
+  const backendUrl = `${BASE_URL}/api/opportunities/`;
 
   const backendRes = await fetch(backendUrl, {
     method: "POST",
@@ -60,6 +71,11 @@ export async function POST(request: Request) {
   });
 
   const text = await backendRes.text();
+
+  console.log("DJANGO STATUS:", backendRes.status);   // 💥 PRINT STATUS
+  console.log("DJANGO ERROR PAYLOAD:", text);         // 💥 PRINT ERROR
+  console.log("REQUEST BODY:", body);
+
   return new Response(text || null, {
     status: backendRes.status,
     headers: { "Content-Type": "application/json" },

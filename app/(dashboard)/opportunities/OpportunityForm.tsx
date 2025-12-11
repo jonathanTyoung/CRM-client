@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ParticipantSelector from "./ParticipantSelector";
+import { Participant } from "../../types/contacts";
 
 // Stage definitions
 const BUYER_STAGES = [
@@ -27,7 +28,17 @@ const SELLER_STAGES = [
 export default function OpportunityForm({ mode, initialData }: any) {
   const router = useRouter();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    title: string;
+    deal_type: "buyer" | "seller";
+    stage: string;
+    property_address: string;
+    mls_id: string;
+    price: string;
+    estimated_close_date: string;
+    notes: string;
+    participants: Participant[];
+  }>(() => ({
     title: initialData?.title || "",
     deal_type: initialData?.deal_type || "buyer",
     stage: initialData?.stage || "prospecting",
@@ -37,7 +48,7 @@ export default function OpportunityForm({ mode, initialData }: any) {
     estimated_close_date: initialData?.estimated_close_date || "",
     notes: initialData?.notes || "",
     participants: initialData?.participants || [],
-  });
+  }));
 
   function handleChange(e: any) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -55,8 +66,25 @@ export default function OpportunityForm({ mode, initialData }: any) {
     }));
   }
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const cleanedParticipants = form.participants.map((p) => {
+      // p is either { contact: ContactObj } or { contact: id }
+      const id =
+        typeof p.contact === "object" && p.contact !== null
+          ? p.contact.id
+          : p.contact;
+
+      return { contact: id };
+    });
+
+    const payload = {
+      ...form,
+      participants: cleanedParticipants,
+    };
+
+    console.log("PAYLOAD WE SEND:", payload); // <-- MUST SEE object array
 
     const url =
       mode === "create"
@@ -68,15 +96,14 @@ export default function OpportunityForm({ mode, initialData }: any) {
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) router.push("/opportunities");
     else console.error(await res.text());
   }
 
-  const stages =
-    form.deal_type === "seller" ? SELLER_STAGES : BUYER_STAGES;
+  const stages = form.deal_type === "seller" ? SELLER_STAGES : BUYER_STAGES;
 
   const input =
     "w-full px-3 py-2 rounded-lg shadow-sm " +
@@ -85,8 +112,7 @@ export default function OpportunityForm({ mode, initialData }: any) {
     "text-neutral-900 dark:text-neutral-100 " +
     "focus:outline-none focus:ring-2 focus:ring-blue-500/40";
 
-  const label =
-    "block mb-1 font-medium text-neutral-700 dark:text-neutral-300";
+  const label = "block mb-1 font-medium text-neutral-700 dark:text-neutral-300";
 
   return (
     <form
@@ -105,7 +131,13 @@ export default function OpportunityForm({ mode, initialData }: any) {
       {/* TITLE */}
       <div>
         <label className={label}>Title</label>
-        <input className={input} name="title" value={form.title} onChange={handleChange} required />
+        <input
+          className={input}
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          required
+        />
       </div>
 
       {/* DEAL TYPE + STAGE */}
@@ -143,14 +175,24 @@ export default function OpportunityForm({ mode, initialData }: any) {
       {/* ADDRESS */}
       <div>
         <label className={label}>Property Address</label>
-        <input className={input} name="property_address" value={form.property_address} onChange={handleChange} />
+        <input
+          className={input}
+          name="property_address"
+          value={form.property_address}
+          onChange={handleChange}
+        />
       </div>
 
       {/* MLS + PRICE */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className={label}>MLS ID</label>
-          <input className={input} name="mls_id" value={form.mls_id} onChange={handleChange} />
+          <input
+            className={input}
+            name="mls_id"
+            value={form.mls_id}
+            onChange={handleChange}
+          />
         </div>
 
         <div>
