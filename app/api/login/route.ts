@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
 
-    const DJANGO_URL = process.env.DJANGO_API_URL!;
+    const DJANGO_URL = process.env.API_URL!;
 
     const res = await fetch(`${DJANGO_URL}/api/login/`, {
       method: "POST",

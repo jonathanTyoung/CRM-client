@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import OpportunityForm from "../OpportunityForm";
 
 export const dynamic = "force-dynamic";
@@ -9,12 +10,19 @@ export default async function OpportunityDetailPage({
   params: { id: string };
 }) {
   const id = params.id;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access")?.value;
+
+  if (!token) return notFound();
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/opportunities/${id}`,
+    `${process.env.API_URL}/api/opportunities/${id}/`,
     {
       cache: "no-store",
-    }
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
   );
 
   if (!res.ok) {

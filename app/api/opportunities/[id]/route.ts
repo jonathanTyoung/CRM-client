@@ -1,15 +1,17 @@
 import { cookies } from "next/headers";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+const BASE_URL = process.env.API_URL!;
 
 // -----------------------
 // GET /api/opportunities/:id
 // -----------------------
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
-  const token = cookies().get("access")?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access")?.value;
+  console.log("OPPORTUNITY [id] TOKEN:", token ? "found" : "MISSING");
 
   if (!token) {
     return Response.json({ detail: "Unauthorized" }, { status: 401 });
@@ -35,7 +37,7 @@ export async function GET(
 // -----------------------
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const token = cookies().get("access")?.value;
 

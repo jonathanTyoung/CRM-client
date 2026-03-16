@@ -7,7 +7,7 @@ export async function auth() {
   if (!token) return null;
 
   // 2. Call Django directly (server-to-server, no CORS issues)
-  const DJANGO_URL = process.env.DJANGO_API_URL!;
+  const DJANGO_URL = process.env.API_URL!;
   const res = await fetch(`${DJANGO_URL}/api/current_user/`, {
     method: "GET",
     headers: {

@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   // Use Django URL — NEVER NEXT_PUBLIC inside server routes
-  const DJANGO_URL = process.env.DJANGO_API_URL!;
+  const DJANGO_URL = process.env.API_URL!;
 
   const res = await fetch(`${DJANGO_URL}/api/current_user/`, {
     method: "GET",

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   if (search) query.append("search", search);
 
   const backendUrl = `${
-    process.env.NEXT_PUBLIC_API_URL
+    process.env.API_URL
   }/api/contacts/?${query.toString()}`;
 
   const backendRes = await fetch(backendUrl, {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/contacts/`;
+  const backendUrl = `${process.env.API_URL}/api/contacts/`;
 
   const backendRes = await fetch(backendUrl, {
     method: "POST",

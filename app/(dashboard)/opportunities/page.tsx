@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -14,36 +14,31 @@ export default async function OpportunitiesPage({
     type?: string;
   };
 }) {
-  // Params
   const page = searchParams.page || "1";
   const search = searchParams.search || "";
   const stage = searchParams.stage || "";
   const type = searchParams.type || "";
 
-  // Query
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access")?.value;
+
+  if (!token) return notFound();
+
   const query = new URLSearchParams();
   query.set("page", page);
   if (search) query.set("search", search);
   if (stage) query.set("stage", stage);
   if (type) query.set("deal_type", type);
 
-  // Build absolute URL SAFELY
-  const hdrs = headers();
-  const host = hdrs.get("host") || "localhost:3000";
-  const protocol = host.includes("localhost") ? "http" : "https";
-  const cookieHeader = hdrs.get("cookie") ?? "";
-
-  const apiUrl = `${protocol}://${host}/api/opportunities?${query.toString()}`;
-
-  console.log("FETCHING:", apiUrl);
-
-  // Fetch from proxy route
-  const res = await fetch(apiUrl, {
-    cache: "no-store",
-    headers: {
-      Cookie: cookieHeader,
+  const res = await fetch(
+    `${process.env.API_URL}/api/opportunities/?${query.toString()}`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+  );
 
   if (!res.ok) {
     console.error(await res.text());

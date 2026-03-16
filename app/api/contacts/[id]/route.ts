@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+const BASE_URL = process.env.API_URL!;
 
 // DELETE /api/contacts/:id  → proxy to Django
 export async function DELETE(

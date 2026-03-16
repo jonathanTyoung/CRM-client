@@ -48,7 +48,7 @@ export default async function ContactDetailPage(props: {
   const token = (await cookies()).get("access")?.value;
   if (!token) redirect("/login");
 
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+  const BASE_URL = process.env.API_URL!;
   const res = await fetch(`${BASE_URL}/api/contacts/${id}/`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
