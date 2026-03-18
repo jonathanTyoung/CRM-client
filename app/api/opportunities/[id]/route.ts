@@ -39,7 +39,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } },
 ) {
-  const token = cookies().get("access")?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access")?.value;
 
   if (!token) {
     return Response.json({ detail: "Unauthorized" }, { status: 401 });

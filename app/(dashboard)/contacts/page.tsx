@@ -40,7 +40,7 @@ export default async function ContactsPage({
   const DJANGO_URL = process.env.API_URL!;
 
   // 3. Call Django directly (server → Django, no CORS issues)
-  const res = await fetch(`${DJANGO_URL}/api/contacts?${query}`, {
+  const res = await fetch(`${DJANGO_URL}/api/contacts/?${query}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

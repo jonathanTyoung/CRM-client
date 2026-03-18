@@ -118,6 +118,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
         throw new Error(data?.detail || "Failed to update contact.");
       }
 
+      router.refresh();
       router.push(`/contacts/${contact.id}/`);
     } catch (err: any) {
       setError(err.message);

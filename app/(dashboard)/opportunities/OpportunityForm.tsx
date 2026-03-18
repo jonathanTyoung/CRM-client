@@ -8,10 +8,9 @@ import { Participant } from "../../types/contacts";
 // Stage definitions
 const BUYER_STAGES = [
   { value: "prospecting", label: "Prospecting" },
-  { value: "agreement_signed", label: "Agreement Signed" },
   { value: "showing", label: "Showing" },
-  { value: "offer", label: "Offer Made" },
-  { value: "contract", label: "Under Contract" },
+  { value: "offer_made", label: "Offer Made" },
+  { value: "under_contract", label: "Under Contract" },
   { value: "closed", label: "Closed" },
 ];
 
@@ -21,12 +20,14 @@ const SELLER_STAGES = [
   { value: "appointment_held", label: "Appointment Held" },
   { value: "agreement_signed", label: "Agreement Signed" },
   { value: "listed", label: "Listed" },
-  { value: "contract", label: "Under Contract" },
+  { value: "under_contract", label: "Under Contract" },
   { value: "closed", label: "Closed" },
 ];
 
 export default function OpportunityForm({ mode, initialData }: any) {
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState<{
     title: string;
@@ -68,6 +69,8 @@ export default function OpportunityForm({ mode, initialData }: any) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     const cleanedParticipants = form.participants.map((p) => {
       // p is either { contact: ContactObj } or { contact: id }
@@ -99,8 +102,14 @@ export default function OpportunityForm({ mode, initialData }: any) {
       body: JSON.stringify(payload),
     });
 
-    if (res.ok) router.push("/opportunities");
-    else console.error(await res.text());
+    if (res.ok) {
+      router.refresh();
+      router.push("/opportunities");
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.detail || JSON.stringify(data) || "Failed to save opportunity.");
+    }
+    setSubmitting(false);
   }
 
   const stages = form.deal_type === "seller" ? SELLER_STAGES : BUYER_STAGES;
@@ -118,15 +127,19 @@ export default function OpportunityForm({ mode, initialData }: any) {
     <form
       onSubmit={handleSubmit}
       className="
-        max-w-2xl mx-auto 
+        max-w-2xl mx-auto
         bg-neutral-50 dark:bg-neutral-900
-        border border-neutral-200 dark:border-neutral-800 
+        border border-neutral-200 dark:border-neutral-800
         rounded-xl p-8 space-y-8 shadow
       "
     >
       <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
         {mode === "create" ? "Create Opportunity" : "Edit Opportunity"}
       </h2>
+
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
 
       {/* TITLE */}
       <div>
@@ -241,13 +254,14 @@ export default function OpportunityForm({ mode, initialData }: any) {
       {/* SUBMIT BUTTON */}
       <button
         type="submit"
+        disabled={submitting}
         className="
-          w-full mt-6 bg-blue-600 hover:bg-blue-700
+          w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-60
           text-white font-medium py-2.5 rounded-lg shadow
           transition-all duration-200
         "
       >
-        {mode === "create" ? "Create Opportunity" : "Save Changes"}
+        {submitting ? "Saving..." : mode === "create" ? "Create Opportunity" : "Save Changes"}
       </button>
     </form>
   );

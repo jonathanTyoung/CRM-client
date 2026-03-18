@@ -23,30 +23,30 @@ export async function POST(req: Request) {
 
     const { access, refresh, user } = data;
 
+    const isProd = process.env.NODE_ENV === "production";
+
     const response = NextResponse.json({ user }, { status: 200 });
 
     response.cookies.set("access", access, {
       httpOnly: true,
-      secure: false,      // dev only; change to true in prod
+      secure: isProd,
       sameSite: "lax",
       path: "/",
     });
 
     response.cookies.set("refresh", refresh, {
       httpOnly: true,
-      secure: false,
+      secure: isProd,
       sameSite: "lax",
       path: "/",
     });
-
-    console.log("Cookie after set:", response.cookies.get("access"));
 
     return response;
   } catch (error) {
     console.error("Login route error:", error);
     return NextResponse.json(
       { detail: "Server error during login" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
