@@ -1,21 +1,8 @@
 import Link from "next/link";
 import { auth } from "../../../lib/auth/auth";
-
-const stats = [
-  { label: "Total Contacts", value: "—", hint: "All contacts in your CRM" },
-  { label: "Active Leads", value: "—", hint: "Leads not yet closed" },
-  { label: "Open Opportunities", value: "—", hint: "Deals currently in pipeline" },
-  { label: "Tasks Today", value: "—", hint: "Calls, follow-ups, reminders" },
-];
-
-const pipelineStages = [
-  { label: "New", count: 5 },
-  { label: "Contacted", count: 3 },
-  { label: "Qualified", count: 2 },
-  { label: "Showing / Tour", count: 1 },
-  { label: "Under Contract", count: 1 },
-  { label: "Closed", count: 0 },
-];
+import { getContacts } from "../../../lib/api/getContacts";
+import { getLeads } from "../../../lib/api/getLeads";
+import { getOpportunities } from "../../../lib/api/getOpportunities";
 
 const recentActivity = [
   { id: 1, text: "New lead created: John Smith", time: "5 minutes ago" },
@@ -24,13 +11,37 @@ const recentActivity = [
   { id: 4, text: "Lead status updated: Alex Brown → Contacted", time: "Yesterday" },
 ];
 
-export default async function DashboardPage() {
-  const user = await auth();  // <-- Updated
+const pipelineStages = [
+  { label: "Prospecting", value: "prospecting" },
+  { label: "Showing", value: "showing" },
+  { label: "Offer Made", value: "offer_made" },
+  { label: "Under Contract", value: "under_contract" },
+  { label: "Closed", value: "closed" },
+];
 
-  const totalPipelineCount = pipelineStages.reduce(
-    (sum, stage) => sum + stage.count,
-    0
-  );
+export default async function DashboardPage() {
+  const [user, contactsData, leadsData, opportunitiesData, ...stageResults] =
+    await Promise.all([
+      auth(),
+      getContacts(),
+      getLeads(),
+      getOpportunities(),
+      ...pipelineStages.map((s) => getOpportunities("1", s.value)),
+    ]);
+
+  const stageCounts = pipelineStages.map((stage, i) => ({
+    label: stage.label,
+    count: stageResults[i]?.count ?? 0,
+  }));
+
+  const totalPipelineCount = stageCounts.reduce((sum, s) => sum + s.count, 0);
+
+  const stats = [
+    { label: "Total Contacts", value: contactsData?.count ?? "—", hint: "All contacts in your CRM" },
+    { label: "Active Leads", value: leadsData?.count ?? "—", hint: "Leads in your pipeline" },
+    { label: "Open Opportunities", value: opportunitiesData?.count ?? "—", hint: "Deals currently in pipeline" },
+    { label: "Tasks Today", value: "—", hint: "Calls, follow-ups, reminders" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -88,7 +99,7 @@ export default async function DashboardPage() {
           </p>
 
           <div className="space-y-3">
-            {pipelineStages.map((stage) => {
+            {stageCounts.map((stage) => {
               const width =
                 totalPipelineCount > 0
                   ? `${(stage.count / totalPipelineCount) * 100}%`

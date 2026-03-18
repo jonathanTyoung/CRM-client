@@ -86,9 +86,12 @@ export default async function OpportunitiesPage({
             <option value="">All Stages</option>
             <option value="prospecting">Prospecting</option>
             <option value="showing">Showing</option>
-            <option value="offer">Offer Made</option>
-            <option value="contract">Under Contract</option>
-            <option value="closing">Closing Scheduled</option>
+            <option value="offer_made">Offer Made</option>
+            <option value="under_contract">Under Contract</option>
+            <option value="appointment_set">Appointment Set</option>
+            <option value="appointment_held">Appointment Held</option>
+            <option value="agreement_signed">Agreement Signed</option>
+            <option value="listed">Listed</option>
             <option value="closed">Closed</option>
           </select>
         </form>
@@ -141,7 +144,7 @@ export default async function OpportunitiesPage({
                     </Link>
                   </td>
                   <td className="py-3 px-4 capitalize">
-                    {opp.stage.replace("_", " ")}
+                    {opp.stage.replaceAll("_", " ")}
                   </td>
                   <td className="py-3 px-4 capitalize">{opp.deal_type}</td>
                   <td className="py-3 px-4">

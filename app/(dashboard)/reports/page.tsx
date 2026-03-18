@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "../../../lib/auth";
+import { auth } from "../../../lib/auth/auth";
 
 export default async function ReportsPage() {
-  const user = await getCurrentUser();
+  const user = await auth();
   if (!user) redirect("/login");
 
   return (

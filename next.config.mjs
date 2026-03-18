@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // keep whatever was here; it's fine
-  }
+    staleTimes: {
+      dynamic: 0, // never serve stale server-component pages from the router cache
+    },
+  },
 };
 
 export default nextConfig;

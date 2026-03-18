@@ -131,28 +131,28 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="error-text">{error}</p>}
 
       {/* Name Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium block mb-1">First Name</label>
+          <label className="form-label">First Name</label>
           <input
             name="first_name"
             value={form.first_name}
             onChange={handleChange}
             required
-            className="border px-3 py-2 rounded w-full"
+            className="input"
           />
         </div>
         <div>
-          <label className="text-sm font-medium block mb-1">Last Name</label>
+          <label className="form-label">Last Name</label>
           <input
             name="last_name"
             value={form.last_name}
             onChange={handleChange}
             required
-            className="border px-3 py-2 rounded w-full"
+            className="input"
           />
         </div>
       </div>
@@ -160,22 +160,22 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
       {/* Email & Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium block mb-1">Email</label>
+          <label className="form-label">Email</label>
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
-            className="border px-3 py-2 rounded w-full"
+            className="input"
           />
         </div>
         <div>
-          <label className="text-sm font-medium block mb-1">Phone</label>
+          <label className="form-label">Phone</label>
           <input
             name="phone"
             value={form.phone}
             onChange={handleChange}
-            className="border px-3 py-2 rounded w-full"
+            className="input"
           />
         </div>
       </div>
@@ -195,12 +195,12 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
       {/* Source & Tags */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium block mb-1">Source</label>
+          <label className="form-label">Source</label>
           <select
             name="source_id"
             value={form.source_id}
             onChange={handleChange}
-            className="border px-3 py-2 rounded w-full"
+            className="input"
           >
             <option value="">— None —</option>
             {sources.map((s) => (
@@ -212,12 +212,14 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
         </div>
 
         <div>
-          <label className="text-sm font-medium block mb-1">Tags</label>
+          <span className="form-label">Tags</span>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
               <label
                 key={tag.id}
-                className="text-xs border rounded px-2 py-1 cursor-pointer flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
+                           dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
+                           hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
               >
                 <input
                   type="checkbox"

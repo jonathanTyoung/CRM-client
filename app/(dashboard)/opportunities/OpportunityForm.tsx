@@ -114,15 +114,6 @@ export default function OpportunityForm({ mode, initialData }: any) {
 
   const stages = form.deal_type === "seller" ? SELLER_STAGES : BUYER_STAGES;
 
-  const input =
-    "w-full px-3 py-2 rounded-lg shadow-sm " +
-    "bg-white dark:bg-neutral-800 " +
-    "border border-neutral-300 dark:border-neutral-700 " +
-    "text-neutral-900 dark:text-neutral-100 " +
-    "focus:outline-none focus:ring-2 focus:ring-blue-500/40";
-
-  const label = "block mb-1 font-medium text-neutral-700 dark:text-neutral-300";
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -137,15 +128,13 @@ export default function OpportunityForm({ mode, initialData }: any) {
         {mode === "create" ? "Create Opportunity" : "Edit Opportunity"}
       </h2>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="error-text">{error}</p>}
 
       {/* TITLE */}
       <div>
-        <label className={label}>Title</label>
+        <label className="form-label">Title</label>
         <input
-          className={input}
+          className="input"
           name="title"
           value={form.title}
           onChange={handleChange}
@@ -156,9 +145,9 @@ export default function OpportunityForm({ mode, initialData }: any) {
       {/* DEAL TYPE + STAGE */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className={label}>Deal Type</label>
+          <label className="form-label">Deal Type</label>
           <select
-            className={input}
+            className="input"
             name="deal_type"
             value={form.deal_type}
             onChange={handleDealTypeChange}
@@ -169,9 +158,9 @@ export default function OpportunityForm({ mode, initialData }: any) {
         </div>
 
         <div>
-          <label className={label}>Stage</label>
+          <label className="form-label">Stage</label>
           <select
-            className={input}
+            className="input"
             name="stage"
             value={form.stage}
             onChange={handleChange}
@@ -187,9 +176,9 @@ export default function OpportunityForm({ mode, initialData }: any) {
 
       {/* ADDRESS */}
       <div>
-        <label className={label}>Property Address</label>
+        <label className="form-label">Property Address</label>
         <input
-          className={input}
+          className="input"
           name="property_address"
           value={form.property_address}
           onChange={handleChange}
@@ -199,9 +188,9 @@ export default function OpportunityForm({ mode, initialData }: any) {
       {/* MLS + PRICE */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className={label}>MLS ID</label>
+          <label className="form-label">MLS ID</label>
           <input
-            className={input}
+            className="input"
             name="mls_id"
             value={form.mls_id}
             onChange={handleChange}
@@ -209,10 +198,10 @@ export default function OpportunityForm({ mode, initialData }: any) {
         </div>
 
         <div>
-          <label className={label}>Price</label>
+          <label className="form-label">Price</label>
           <input
             type="number"
-            className={input}
+            className="input"
             name="price"
             value={form.price}
             onChange={handleChange}
@@ -222,10 +211,10 @@ export default function OpportunityForm({ mode, initialData }: any) {
 
       {/* DATE */}
       <div>
-        <label className={label}>Estimated Close Date</label>
+        <label className="form-label">Estimated Close Date</label>
         <input
           type="date"
-          className={input}
+          className="input"
           name="estimated_close_date"
           value={form.estimated_close_date}
           onChange={handleChange}
@@ -234,9 +223,9 @@ export default function OpportunityForm({ mode, initialData }: any) {
 
       {/* NOTES */}
       <div>
-        <label className={label}>Notes</label>
+        <label className="form-label">Notes</label>
         <textarea
-          className={`${input} h-28`}
+          className="input h-28"
           name="notes"
           value={form.notes}
           onChange={handleChange}
@@ -255,11 +244,7 @@ export default function OpportunityForm({ mode, initialData }: any) {
       <button
         type="submit"
         disabled={submitting}
-        className="
-          w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-60
-          text-white font-medium py-2.5 rounded-lg shadow
-          transition-all duration-200
-        "
+        className="btn-primary w-full justify-center"
       >
         {submitting ? "Saving..." : mode === "create" ? "Create Opportunity" : "Save Changes"}
       </button>

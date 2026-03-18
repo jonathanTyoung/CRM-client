@@ -32,7 +32,6 @@ export default function NewContactForm() {
     tag_ids: [] as number[],
   });
 
-  // ------- Load Tags + Sources Safely (404 = empty list) -------
   useEffect(() => {
     async function loadMeta() {
       try {
@@ -40,25 +39,17 @@ export default function NewContactForm() {
           fetch("/api/tags"),
           fetch("/api/sources"),
         ]);
-
-        // Safe fallback: if backend returns 404 or 500 → treat as empty arrays
-        const tagsData = tagsRes.ok ? await tagsRes.json() : [];
-        const sourcesData = sourcesRes.ok ? await sourcesRes.json() : [];
-
-        setTags(tagsData);
-        setSources(sourcesData);
+        setTags(tagsRes.ok ? await tagsRes.json() : []);
+        setSources(sourcesRes.ok ? await sourcesRes.json() : []);
       } catch (err: any) {
         console.error("Metadata fetch error:", err);
-        setError("Unable to load metadata. Tags and sources may not exist yet.");
       } finally {
         setLoading(false);
       }
     }
-
     loadMeta();
   }, []);
 
-  // ------- Form Handlers -------
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
@@ -67,18 +58,14 @@ export default function NewContactForm() {
   }
 
   function handleTagToggle(tagId: number) {
-    setForm((prev) => {
-      const exists = prev.tag_ids.includes(tagId);
-      return {
-        ...prev,
-        tag_ids: exists
-          ? prev.tag_ids.filter((id) => id !== tagId)
-          : [...prev.tag_ids, tagId],
-      };
-    });
+    setForm((prev) => ({
+      ...prev,
+      tag_ids: prev.tag_ids.includes(tagId)
+        ? prev.tag_ids.filter((id) => id !== tagId)
+        : [...prev.tag_ids, tagId],
+    }));
   }
 
-  // ------- Submit Handler -------
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -113,101 +100,59 @@ export default function NewContactForm() {
     }
   }
 
-  if (loading) {
-    return <p>Loading contact options…</p>;
-  }
+  if (loading) return <p className="text-sm text-zinc-500">Loading options…</p>;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-sm text-red-500">{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && <p className="error-text">{error}</p>}
 
-      {/* Name Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">First name</label>
-          <input
-            name="first_name"
-            value={form.first_name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 text-sm"
-            required
-          />
+          <label className="form-label">First name</label>
+          <input name="first_name" value={form.first_name} onChange={handleChange} className="input" required />
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-1">Last name</label>
-          <input
-            name="last_name"
-            value={form.last_name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 text-sm"
-            required
-          />
+          <label className="form-label">Last name</label>
+          <input name="last_name" value={form.last_name} onChange={handleChange} className="input" required />
         </div>
       </div>
 
-      {/* Email & Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 text-sm"
-          />
+          <label className="form-label">Email</label>
+          <input type="email" name="email" value={form.email} onChange={handleChange} className="input" />
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-1">Phone</label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 text-sm"
-          />
+          <label className="form-label">Phone</label>
+          <input name="phone" value={form.phone} onChange={handleChange} className="input" />
         </div>
       </div>
 
-      {/* Notes */}
       <div>
-        <label className="block text-sm font-medium mb-1">Notes</label>
-        <textarea
-          name="notes"
-          value={form.notes}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2 text-sm"
-          rows={4}
-        />
+        <label className="form-label">Notes</label>
+        <textarea name="notes" value={form.notes} onChange={handleChange} className="input" rows={4} />
       </div>
 
-      {/* Source & Tags */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Source</label>
-          <select
-            name="source_id"
-            value={form.source_id}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 text-sm"
-          >
+          <label className="form-label">Source</label>
+          <select name="source_id" value={form.source_id} onChange={handleChange} className="input">
             <option value="">— None —</option>
             {sources.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         </div>
 
         <div>
-          <span className="block text-sm font-medium mb-1">Tags</span>
+          <span className="form-label">Tags</span>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
               <label
                 key={tag.id}
-                className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1 cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
+                           dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
+                           hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
               >
                 <input
                   type="checkbox"
@@ -221,18 +166,12 @@ export default function NewContactForm() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="pt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={() => router.back()}
-          disabled={submitting}
-        >
+      <div className="pt-2 flex justify-end gap-2">
+        <button type="button" className="btn-secondary" onClick={() => router.back()} disabled={submitting}>
           Cancel
         </button>
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Contact"}
+          {submitting ? "Saving…" : "Save Contact"}
         </button>
       </div>
     </form>
