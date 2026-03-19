@@ -28,6 +28,7 @@ export default function NewContactForm() {
     email: "",
     phone: "",
     notes: "",
+    relationship_type: "",
     source_id: "",
     tag_ids: [] as number[],
   });
@@ -81,6 +82,7 @@ export default function NewContactForm() {
           email: form.email,
           phone: form.phone,
           notes: form.notes,
+          relationship_type: form.relationship_type || null,
           source_id: form.source_id ? Number(form.source_id) : null,
           tag_ids: form.tag_ids,
         }),
@@ -106,6 +108,7 @@ export default function NewContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && <p className="error-text">{error}</p>}
 
+      {/* Name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="form-label">First name</label>
@@ -117,6 +120,7 @@ export default function NewContactForm() {
         </div>
       </div>
 
+      {/* Email & Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="form-label">Email</label>
@@ -128,12 +132,20 @@ export default function NewContactForm() {
         </div>
       </div>
 
-      <div>
-        <label className="form-label">Notes</label>
-        <textarea name="notes" value={form.notes} onChange={handleChange} className="input" rows={4} />
-      </div>
-
+      {/* Relationship Type & Source */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Relationship Type</label>
+          <select name="relationship_type" value={form.relationship_type} onChange={handleChange} className="input">
+            <option value="">— None —</option>
+            <option value="prospect">Prospect</option>
+            <option value="client">Client</option>
+            <option value="past_client">Past Client</option>
+            <option value="referral">Referral</option>
+            <option value="vendor">Vendor</option>
+            <option value="sphere">Sphere</option>
+          </select>
+        </div>
         <div>
           <label className="form-label">Source</label>
           <select name="source_id" value={form.source_id} onChange={handleChange} className="input">
@@ -143,26 +155,33 @@ export default function NewContactForm() {
             ))}
           </select>
         </div>
+      </div>
 
-        <div>
-          <span className="form-label">Tags</span>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <label
-                key={tag.id}
-                className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
-                           dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
-                           hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
-              >
-                <input
-                  type="checkbox"
-                  checked={form.tag_ids.includes(tag.id)}
-                  onChange={() => handleTagToggle(tag.id)}
-                />
-                {tag.name}
-              </label>
-            ))}
-          </div>
+      {/* Notes */}
+      <div>
+        <label className="form-label">Notes</label>
+        <textarea name="notes" value={form.notes} onChange={handleChange} className="input" rows={4} />
+      </div>
+
+      {/* Tags */}
+      <div>
+        <span className="form-label">Tags</span>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {tags.map((tag) => (
+            <label
+              key={tag.id}
+              className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
+                         dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
+                         hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
+            >
+              <input
+                type="checkbox"
+                checked={form.tag_ids.includes(tag.id)}
+                onChange={() => handleTagToggle(tag.id)}
+              />
+              {tag.name}
+            </label>
+          ))}
         </div>
       </div>
 

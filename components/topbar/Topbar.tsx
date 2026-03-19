@@ -6,7 +6,8 @@ import SidebarLogoutButton from "../sidebar/SidebarLogoutButton";
 export default function Topbar({ user }: { user: any }) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
-  const pageTitle = segments[segments.length - 1] || "Dashboard";
+  const meaningful = segments.filter((s) => !/^\d+$/.test(s));
+  const pageTitle = meaningful[meaningful.length - 1] || "Dashboard";
 
   // ---------------------------------------------------------
   // ⭐ Null-safe loading state

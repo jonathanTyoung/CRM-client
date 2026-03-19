@@ -20,9 +20,19 @@ interface Contact {
   email: string;
   phone: string;
   notes: string;
+  relationship_type: string | null;
   source: Source | null;
   tags: Tag[];
 }
+
+const RELATIONSHIP_OPTIONS = [
+  { value: "prospect", label: "Prospect" },
+  { value: "client", label: "Client" },
+  { value: "past_client", label: "Past Client" },
+  { value: "referral", label: "Referral" },
+  { value: "vendor", label: "Vendor" },
+  { value: "sphere", label: "Sphere" },
+];
 
 export default function EditContactForm({ contact }: { contact: Contact }) {
   const router = useRouter();
@@ -39,11 +49,11 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     email: contact.email || "",
     phone: contact.phone || "",
     notes: contact.notes || "",
+    relationship_type: contact.relationship_type ?? "",
     source_id: contact.source?.id?.toString() ?? "",
     tag_ids: contact.tags.map((t) => t.id),
   });
 
-  // ------- Load Tags + Sources -------
   useEffect(() => {
     async function loadMeta() {
       try {
@@ -51,33 +61,20 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
           fetch("/api/tags/"),
           fetch("/api/sources/"),
         ]);
-
-        // ✔️ Safe fallback: if the table doesn’t exist or returns 404,
-        // treat it as “empty list” instead of erroring.
-        const tagsData = tagsRes.ok ? await tagsRes.json() : [];
-        const sourcesData = sourcesRes.ok ? await sourcesRes.json() : [];
-
-        setTags(tagsData);
-        setSources(sourcesData);
+        setTags(tagsRes.ok ? await tagsRes.json() : []);
+        setSources(sourcesRes.ok ? await sourcesRes.json() : []);
       } catch (err) {
         console.error("Metadata fetch error:", err);
-        // ⚠️ Only show error when there is a REAL network/fetch failure.
-        setError(
-          "Unable to load metadata. Tags and sources may not exist yet."
-        );
+        setError("Unable to load metadata. Tags and sources may not exist yet.");
       } finally {
         setLoadingMeta(false);
       }
     }
-
     loadMeta();
   }, []);
 
-  // ------- Form Handlers -------
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -100,7 +97,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     try {
       const res = await fetch(`/api/contacts/${contact.id}/`, {
         method: "PATCH",
-        credentials: "include", // 🔥 FIX #3
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: form.first_name,
@@ -108,6 +105,7 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
           email: form.email,
           phone: form.phone,
           notes: form.notes,
+          relationship_type: form.relationship_type || null,
           source_id: form.source_id ? Number(form.source_id) : null,
           tag_ids: form.tag_ids,
         }),
@@ -127,33 +125,21 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
     }
   }
 
-  if (loadingMeta) return <p>Loading contact options…</p>;
+  if (loadingMeta) return <p className="text-sm text-zinc-500">Loading contact options…</p>;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && <p className="error-text">{error}</p>}
 
-      {/* Name Fields */}
+      {/* Name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="form-label">First Name</label>
-          <input
-            name="first_name"
-            value={form.first_name}
-            onChange={handleChange}
-            required
-            className="input"
-          />
+          <input name="first_name" value={form.first_name} onChange={handleChange} required className="input" />
         </div>
         <div>
           <label className="form-label">Last Name</label>
-          <input
-            name="last_name"
-            value={form.last_name}
-            onChange={handleChange}
-            required
-            className="input"
-          />
+          <input name="last_name" value={form.last_name} onChange={handleChange} required className="input" />
         </div>
       </div>
 
@@ -161,91 +147,71 @@ export default function EditContactForm({ contact }: { contact: Contact }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="form-label">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            className="input"
-          />
+          <input type="email" name="email" value={form.email} onChange={handleChange} className="input" />
         </div>
         <div>
           <label className="form-label">Phone</label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            className="input"
-          />
+          <input name="phone" value={form.phone} onChange={handleChange} className="input" />
+        </div>
+      </div>
+
+      {/* Relationship Type & Source */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Relationship Type</label>
+          <select name="relationship_type" value={form.relationship_type} onChange={handleChange} className="input">
+            <option value="">— None —</option>
+            {RELATIONSHIP_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Source</label>
+          <select name="source_id" value={form.source_id} onChange={handleChange} className="input">
+            <option value="">— None —</option>
+            {sources.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </div>
       </div>
 
       {/* Notes */}
       <div>
-        <label className="text-sm font-medium block mb-1">Notes</label>
-        <textarea
-          name="notes"
-          value={form.notes}
-          onChange={handleChange}
-          rows={4}
-          className="border px-3 py-2 rounded w-full"
-        />
+        <label className="form-label">Notes</label>
+        <textarea name="notes" value={form.notes} onChange={handleChange} rows={4} className="input" />
       </div>
 
-      {/* Source & Tags */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Source</label>
-          <select
-            name="source_id"
-            value={form.source_id}
-            onChange={handleChange}
-            className="input"
-          >
-            <option value="">— None —</option>
-            {sources.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <span className="form-label">Tags</span>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <label
-                key={tag.id}
-                className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
-                           dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
-                           hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
-              >
-                <input
-                  type="checkbox"
-                  checked={form.tag_ids.includes(tag.id)}
-                  onChange={() => toggleTag(tag.id)}
-                />
-                {tag.name}
-              </label>
-            ))}
-          </div>
+      {/* Tags */}
+      <div>
+        <span className="form-label">Tags</span>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {tags.map((tag) => (
+            <label
+              key={tag.id}
+              className="inline-flex items-center gap-1.5 text-xs border border-zinc-300
+                         dark:border-zinc-700 rounded-md px-2 py-1 cursor-pointer
+                         hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
+            >
+              <input
+                type="checkbox"
+                checked={form.tag_ids.includes(tag.id)}
+                onChange={() => toggleTag(tag.id)}
+              />
+              {tag.name}
+            </label>
+          ))}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="pt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={() => router.back()}
-          disabled={submitting}
-        >
+      <div className="pt-2 flex justify-end gap-2">
+        <button type="button" className="btn-secondary" onClick={() => router.back()} disabled={submitting}>
           Cancel
         </button>
-
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Changes"}
+          {submitting ? "Saving…" : "Save Changes"}
         </button>
       </div>
     </form>

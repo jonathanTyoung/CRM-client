@@ -87,8 +87,6 @@ export default function OpportunityForm({ mode, initialData }: any) {
       participants: cleanedParticipants,
     };
 
-    console.log("PAYLOAD WE SEND:", payload); // <-- MUST SEE object array
-
     const url =
       mode === "create"
         ? "/api/opportunities"
@@ -103,8 +101,13 @@ export default function OpportunityForm({ mode, initialData }: any) {
     });
 
     if (res.ok) {
+      const saved = await res.json().catch(() => null);
       router.refresh();
-      router.push("/opportunities");
+      router.push(
+        mode === "create"
+          ? `/opportunities/${saved?.id ?? ""}`
+          : `/opportunities/${initialData.id}`
+      );
     } else {
       const data = await res.json().catch(() => null);
       setError(data?.detail || JSON.stringify(data) || "Failed to save opportunity.");
